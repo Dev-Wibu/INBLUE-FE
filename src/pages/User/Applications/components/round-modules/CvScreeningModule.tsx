@@ -1,3 +1,8 @@
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getAiEvaluationScore, normalizeAiFeedback } from "@/lib/ai-feedback";
@@ -535,21 +540,19 @@ export function CvScreeningModule({
                     <div key={`${metric.code ?? "metric"}-${index}`} className="text-xs">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <span className="font-semibold text-slate-700 dark:text-slate-200">
-                            {metric.code || t("userApplication.cvScreening.metric", "Metric")}
-                            {metric.name ? ` - ${metric.name}` : ""}
+                          <span className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
+                            {metric.code && <MetricCodeBadge code={metric.code} />}
+                            <span>
+                              {metric.name ||
+                                (!metric.code && t("userApplication.cvScreening.metric"))}
+                            </span>
                           </span>
                           {metric.feedback && (
                             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
                               {metric.feedback}
                             </p>
                           )}
-                          {metric.evidence && (
-                            <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-                              <strong>{t("structuredAiFeedback.evidence")}:</strong>{" "}
-                              {metric.evidence}
-                            </p>
-                          )}
+                          {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
                         </div>
                         {typeof metric.score === "number" && (
                           <span className="shrink-0 font-bold text-indigo-600 dark:text-indigo-400">
@@ -565,13 +568,7 @@ export function CvScreeningModule({
                             })}
                           </span>
                         )}
-                        {t(
-                          metric.passed === true
-                            ? "structuredAiFeedback.passed"
-                            : metric.passed === false
-                              ? "structuredAiFeedback.failed"
-                              : "structuredAiFeedback.notAssessed"
-                        )}
+                        <MetricResultIcon passed={metric.passed} />
                       </p>
                     </div>
                   ))}

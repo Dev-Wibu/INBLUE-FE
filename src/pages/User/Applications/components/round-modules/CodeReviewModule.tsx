@@ -1,3 +1,8 @@
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -1920,9 +1925,11 @@ function GradedResultView({
                 {feedback.metricResults.map((metric, index) => (
                   <div key={`${metric.code ?? "metric"}-${index}`} className="text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-800 dark:text-slate-100">
-                        {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                        {metric.name ? ` - ${metric.name}` : ""}
+                      <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
+                        {metric.code && <MetricCodeBadge code={metric.code} />}
+                        <span>
+                          {metric.name || (!metric.code && t("structuredAiFeedback.unknownMetric"))}
+                        </span>
                       </span>
                       <span className="font-bold text-indigo-600 dark:text-indigo-400">
                         {metric.score !== null
@@ -1938,24 +1945,14 @@ function GradedResultView({
                           })}
                         </span>
                       )}
-                      {t(
-                        metric.passed === true
-                          ? "structuredAiFeedback.passed"
-                          : metric.passed === false
-                            ? "structuredAiFeedback.failed"
-                            : "structuredAiFeedback.notAssessed"
-                      )}
+                      <MetricResultIcon passed={metric.passed} />
                     </p>
                     {metric.feedback && (
                       <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-300">
                         {metric.feedback}
                       </p>
                     )}
-                    {metric.evidence && (
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
-                      </p>
-                    )}
+                    {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
                   </div>
                 ))}
               </div>

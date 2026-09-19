@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { usePendingMentorSchedules } from "@/hooks/useApplicationDetails";
 import { useCurrentMentorProfile } from "@/hooks/useMentor";
 import { useMentorReviews, type MentorReview } from "@/hooks/useMentorReview";
 import { useHybridPageSize, usePagination } from "@/hooks/usePagination";
@@ -29,6 +30,7 @@ import type { Session } from "@/interfaces";
 import { getSessionJoinAvailability } from "@/lib/session-join";
 import { filterSessionsForMentor } from "@/lib/session-mentor";
 import { getSessionStatusBadge } from "@/lib/status-utils";
+import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LogIn, Pencil, Search, Video, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -61,6 +63,8 @@ export function MentorSessionsPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus>("all");
+  const [activeView, setActiveView] = useState<"sessions" | "approvals">("sessions");
+  const { data: pendingSchedules = [] } = usePendingMentorSchedules();
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -167,7 +171,7 @@ export function MentorSessionsPage() {
         </div>
       ) : (
         <div className="animate-in fade-in slide-in-from-bottom-2 flex min-h-full flex-col overflow-auto bg-slate-50 p-5 duration-300 sm:p-6 md:px-8 dark:bg-slate-950">
-          <section className="mb-6 rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-md dark:shadow-slate-950/40">
+          <section className="mb-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -198,296 +202,337 @@ export function MentorSessionsPage() {
               </div>
             </div>
 
-            <form
-              onSubmit={(event) => event.preventDefault()}
-              className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
-                <Input
-                  type="search"
-                  placeholder={t("mentorSessions.searchByRoomNameOrId")}
-                  value={searchQuery}
-                  onChange={(event) => {
-                    setSearchQuery(event.target.value);
-                    pagination.goToFirstPage();
-                  }}
-                  className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70"
-                />
-              </div>
-              <Button
-                type="submit"
-                variant="outline"
-                className="h-[46px] rounded-xl border-slate-200/90 bg-white px-6 font-semibold shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-                <Search className="h-[18px] w-[18px]" />
-                {t("common.search")}
-              </Button>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value as SessionStatus);
-                  pagination.goToFirstPage();
-                }}>
-                <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-white px-4 text-sm font-semibold shadow-2xs sm:w-44 dark:border-slate-800 dark:bg-slate-900">
-                  <SelectValue placeholder={t("common.filterByStatus")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("common.allStatus")}</SelectItem>
-                  <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
-                  <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
-                  <SelectItem value="PAID">{t("common.paid")}</SelectItem>
-                  <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
-                  <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
-                  <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
-                  <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <ReloadButton
-                onReload={async () => {
-                  await Promise.all([
-                    refetchSessions(),
-                    refetchReviews(),
-                    refetchCandidates(),
-                    queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] }),
-                  ]);
-                }}
-                isLoading={isRefetching}
-                tooltip={t("mentorSessions.reloadInterviewSessionList")}
-                className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900"
-              />
-            </form>
+            <div
+              role="tablist"
+              aria-label={t("mentorSessions.interviewSessions")}
+              className="mt-5 flex w-fit max-w-full gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeView === "sessions"}
+                onClick={() => setActiveView("sessions")}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
+                  activeView === "sessions"
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
+                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                )}>
+                {t("mentorSessions.interviewSessions")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeView === "approvals"}
+                onClick={() => setActiveView("approvals")}
+                className={cn(
+                  "rounded-md px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors",
+                  activeView === "approvals"
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
+                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                )}>
+                {t("mentorSchedule.pendingTitle")}{" "}
+                <span className="ml-1 text-xs text-slate-500">{pendingSchedules.length}</span>
+              </button>
+            </div>
 
-            {(searchQuery || statusFilter !== "all") && (
-              <div className="mt-4">
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  {t("common.clearFilter")}
-                </Button>
-              </div>
-            )}
-          </section>
-
-          <PendingScheduleApprovals />
-
-          <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            {pageData.length === 0 ? (
-              <div className="flex h-64 flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <Video className="h-6 w-6 text-slate-400" />
-                </div>
-                <p className="text-sm font-medium text-slate-500">
-                  {t("mentorSessions.thereIsNoProperInterview")}
-                </p>
-                {(searchQuery || statusFilter !== "all") && (
-                  <Button variant="outline" size="sm" onClick={clearFilters}>
-                    {t("common.clearFilter")}
+            {activeView === "sessions" && (
+              <>
+                <form
+                  onSubmit={(event) => event.preventDefault()}
+                  className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <div className="relative flex-1">
+                    <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                    <Input
+                      type="search"
+                      placeholder={t("mentorSessions.searchByRoomNameOrId")}
+                      value={searchQuery}
+                      onChange={(event) => {
+                        setSearchQuery(event.target.value);
+                        pagination.goToFirstPage();
+                      }}
+                      className="h-[46px] rounded-xl border border-slate-200/90 bg-slate-50/70 pl-11 text-[14.5px] shadow-2xs focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/70"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="h-[46px] rounded-xl border-slate-200/90 bg-white px-6 font-semibold shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+                    <Search className="h-[18px] w-[18px]" />
+                    {t("common.search")}
                   </Button>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="min-w-[980px]">
-                  <Table className="table-fixed">
-                    <TableHeader>
-                      <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                        <TableHead className="w-[8%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.id")}
-                        </TableHead>
-                        <TableHead className="w-[29%] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.candidate")}
-                        </TableHead>
-                        <TableHead className="w-[27%] px-5 font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.session")}
-                        </TableHead>
-                        <TableHead className="w-[14%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.status")}
-                        </TableHead>
-                        <TableHead className="w-[10%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.review")}
-                        </TableHead>
-                        <TableHead className="w-[12%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
-                          {t("common.actions")}
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pageData.map((session) => {
-                        const review =
-                          typeof session.id === "number"
-                            ? reviewBySessionId.get(session.id)
-                            : undefined;
-                        const candidate =
-                          review?.user ||
-                          (session.userId ? candidateProfilesById.get(session.userId) : undefined);
-                        const statusBadge = getSessionStatusBadge(session.status);
-                        const hasReview = Boolean(review?.id);
-                        const joinAvailability = getSessionJoinAvailability(session, now);
-                        return (
-                          <TableRow
-                            key={session.id}
-                            onClick={() =>
-                              navigate(`/mentor/sessions/${session.id}`, {
-                                state: { returnTo: "/mentor?tab=sessions" },
-                              })
-                            }
-                            className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
-                            <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
-                              #{session.id}
-                            </TableCell>
-                            <TableCell className="px-5 py-4">
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
-                                  <AvatarImage src={candidate?.avatarUrl} alt={candidate?.name} />
-                                  <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
-                                    {candidate?.name?.charAt(0)?.toUpperCase() || "U"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0">
-                                  <p className="max-w-[190px] truncate font-semibold text-slate-900 dark:text-white">
-                                    {candidate?.name ||
-                                      (session.userId
-                                        ? `${t("common.candidate")} #${session.userId}`
-                                        : t("common.candidate"))}
-                                  </p>
-                                  <p className="max-w-[190px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                    {candidate?.email || `ID #${session.userId ?? "—"}`}
-                                  </p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="px-5 py-4">
-                              <p className="max-w-[260px] truncate font-semibold text-slate-900 dark:text-white">
-                                {session.roomName || t("common.interviewSession")}
-                              </p>
-                              <p className="mt-0.5 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
-                                {session.roomUrl || "—"}
-                              </p>
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-center">
-                              <Badge
-                                variant={statusBadge.variant}
-                                className={`${statusBadge.className} inline-flex min-w-[88px] justify-center px-2.5`}>
-                                {statusBadge.label}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-center">
-                              {hasReview || session.status === "COMPLETED" ? (
-                                <Badge
-                                  variant="outline"
-                                  className={`inline-flex min-w-[84px] justify-center px-2.5 ${
-                                    hasReview
-                                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                                      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                                  }`}>
-                                  {hasReview ? t("common.done") : t("common.pending")}
-                                </Badge>
-                              ) : (
-                                <span className="text-sm text-slate-400">—</span>
-                              )}
-                            </TableCell>
-                            <TableCell
-                              className="py-4 pr-6"
-                              onClick={(event) => event.stopPropagation()}>
-                              <div className="flex min-h-8 items-center justify-end gap-2">
-                                {joinAvailability.canJoin && (
-                                  <Button
-                                    size="icon"
-                                    className="h-8 w-8 bg-emerald-600 text-white hover:bg-emerald-700"
-                                    title={t("common.enterTheInterviewRoom")}
-                                    aria-label={t("common.enterTheInterviewRoom")}
-                                    onClick={() =>
-                                      navigate(`/mentor/sessions/room/${session.id}`, {
-                                        state: { returnTo: "/mentor?tab=sessions" },
-                                      })
-                                    }>
-                                    <LogIn className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                                {session.status === "DRAFT" && (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="icon"
-                                      className="h-8 w-8 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
-                                      title={t("common.accept")}
-                                      aria-label={t("common.accept")}
-                                      disabled={updateStatusMutation.isPending}
-                                      onClick={() =>
-                                        session.id &&
-                                        updateStatusMutation.mutate({
-                                          sessionId: session.id,
-                                          isApproved: true,
-                                        })
-                                      }>
-                                      <Check className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="icon"
-                                      className="h-8 w-8 border-rose-500/30 text-rose-700 dark:text-rose-300"
-                                      title={t("common.reject")}
-                                      aria-label={t("common.reject")}
-                                      disabled={updateStatusMutation.isPending}
-                                      onClick={() =>
-                                        session.id &&
-                                        updateStatusMutation.mutate({
-                                          sessionId: session.id,
-                                          isApproved: false,
-                                        })
-                                      }>
-                                      <X className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </>
-                                )}
-                                {session.status === "COMPLETED" && (
-                                  <Button
-                                    variant={hasReview ? "outline" : "default"}
-                                    size="icon"
-                                    className={`h-8 w-8 ${
-                                      hasReview
-                                        ? ""
-                                        : "bg-indigo-600 text-white hover:bg-indigo-700"
-                                    }`}
-                                    title={
-                                      hasReview ? t("common.editReview") : t("common.writeReview")
-                                    }
-                                    aria-label={
-                                      hasReview ? t("common.editReview") : t("common.writeReview")
-                                    }
-                                    onClick={() =>
-                                      navigate(`/mentor/sessions/${session.id}/review/view`, {
-                                        state: {
-                                          returnTo: "/mentor?tab=sessions",
-                                          edit: hasReview,
-                                        },
-                                      })
-                                    }>
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) => {
+                      setStatusFilter(value as SessionStatus);
+                      pagination.goToFirstPage();
+                    }}>
+                    <SelectTrigger className="h-[46px] w-full rounded-xl border-slate-200/90 bg-white px-4 text-sm font-semibold shadow-2xs sm:w-44 dark:border-slate-800 dark:bg-slate-900">
+                      <SelectValue placeholder={t("common.filterByStatus")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("common.allStatus")}</SelectItem>
+                      <SelectItem value="DRAFT">{t("common.waitingForApproval")}</SelectItem>
+                      <SelectItem value="SCHEDULED">{t("common.scheduled")}</SelectItem>
+                      <SelectItem value="PAID">{t("common.paid")}</SelectItem>
+                      <SelectItem value="ONGOING">{t("common.ongoing")}</SelectItem>
+                      <SelectItem value="COMPLETED">{t("general.completed")}</SelectItem>
+                      <SelectItem value="REJECTED">{t("common.rejected")}</SelectItem>
+                      <SelectItem value="CANCELED">{t("common.canceled")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <ReloadButton
+                    onReload={async () => {
+                      await Promise.all([
+                        refetchSessions(),
+                        refetchReviews(),
+                        refetchCandidates(),
+                        queryClient.invalidateQueries({ queryKey: ["mentorPendingSchedules"] }),
+                      ]);
+                    }}
+                    isLoading={isRefetching}
+                    tooltip={t("mentorSessions.reloadInterviewSessionList")}
+                    className="h-[46px] w-[46px] rounded-xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+                  />
+                </form>
 
-            {sortedData.length > 0 && (
-              <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-                <PaginationControl
-                  pagination={pagination}
-                  showBoundaryButtons={false}
-                  showPageJump={false}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    pagination.goToFirstPage();
-                  }}
-                />
-              </div>
+                {(searchQuery || statusFilter !== "all") && (
+                  <div className="mt-4">
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </section>
+
+          {activeView === "approvals" ? (
+            <PendingScheduleApprovals />
+          ) : (
+            <section className="overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              {pageData.length === 0 ? (
+                <div className="flex h-64 flex-col items-center justify-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                    <Video className="h-6 w-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-500">
+                    {t("mentorSessions.thereIsNoProperInterview")}
+                  </p>
+                  {(searchQuery || statusFilter !== "all") && (
+                    <Button variant="outline" size="sm" onClick={clearFilters}>
+                      {t("common.clearFilter")}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[980px]">
+                    <Table className="table-fixed">
+                      <TableHeader>
+                        <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
+                          <TableHead className="w-[8%] pl-6 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.id")}
+                          </TableHead>
+                          <TableHead className="w-[29%] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.candidate")}
+                          </TableHead>
+                          <TableHead className="w-[27%] px-5 font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.session")}
+                          </TableHead>
+                          <TableHead className="w-[14%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.status")}
+                          </TableHead>
+                          <TableHead className="w-[10%] px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.review")}
+                          </TableHead>
+                          <TableHead className="w-[12%] pr-6 text-right font-semibold text-slate-700 dark:text-slate-200">
+                            {t("common.actions")}
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pageData.map((session) => {
+                          const review =
+                            typeof session.id === "number"
+                              ? reviewBySessionId.get(session.id)
+                              : undefined;
+                          const candidate =
+                            review?.user ||
+                            (session.userId
+                              ? candidateProfilesById.get(session.userId)
+                              : undefined);
+                          const statusBadge = getSessionStatusBadge(session.status);
+                          const hasReview = Boolean(review?.id);
+                          const joinAvailability = getSessionJoinAvailability(session, now);
+                          return (
+                            <TableRow
+                              key={session.id}
+                              onClick={() =>
+                                navigate(`/mentor/sessions/${session.id}`, {
+                                  state: { returnTo: "/mentor?tab=sessions" },
+                                })
+                              }
+                              className="group cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
+                              <TableCell className="py-4 pl-6 font-mono text-xs font-semibold text-slate-500 dark:text-slate-300">
+                                #{session.id}
+                              </TableCell>
+                              <TableCell className="px-5 py-4">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-9 w-9 shrink-0 rounded-[14px] border border-slate-200/90 shadow-2xs dark:border-slate-800/80">
+                                    <AvatarImage src={candidate?.avatarUrl} alt={candidate?.name} />
+                                    <AvatarFallback className="rounded-[14px] bg-sky-50 font-semibold text-sky-700 dark:bg-sky-950/80 dark:text-sky-300">
+                                      {candidate?.name?.charAt(0)?.toUpperCase() || "U"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="min-w-0">
+                                    <p className="max-w-[190px] truncate font-semibold text-slate-900 dark:text-white">
+                                      {candidate?.name ||
+                                        (session.userId
+                                          ? `${t("common.candidate")} #${session.userId}`
+                                          : t("common.candidate"))}
+                                    </p>
+                                    <p className="max-w-[190px] truncate text-xs text-slate-500 dark:text-slate-400">
+                                      {candidate?.email || `ID #${session.userId ?? "—"}`}
+                                    </p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="px-5 py-4">
+                                <p className="max-w-[260px] truncate font-semibold text-slate-900 dark:text-white">
+                                  {session.roomName || t("common.interviewSession")}
+                                </p>
+                                <p className="mt-0.5 max-w-[260px] truncate text-xs text-slate-500 dark:text-slate-400">
+                                  {session.roomUrl || "—"}
+                                </p>
+                              </TableCell>
+                              <TableCell className="px-5 py-4 text-center">
+                                <Badge
+                                  variant={statusBadge.variant}
+                                  className={`${statusBadge.className} inline-flex min-w-[88px] justify-center px-2.5`}>
+                                  {statusBadge.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="px-5 py-4 text-center">
+                                {hasReview || session.status === "COMPLETED" ? (
+                                  <Badge
+                                    variant="outline"
+                                    className={`inline-flex min-w-[84px] justify-center px-2.5 ${
+                                      hasReview
+                                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                        : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                                    }`}>
+                                    {hasReview ? t("common.done") : t("common.pending")}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-sm text-slate-400">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell
+                                className="py-4 pr-6"
+                                onClick={(event) => event.stopPropagation()}>
+                                <div className="flex min-h-8 items-center justify-end gap-2">
+                                  {joinAvailability.canJoin && (
+                                    <Button
+                                      size="icon"
+                                      className="h-8 w-8 bg-emerald-600 text-white hover:bg-emerald-700"
+                                      title={t("common.enterTheInterviewRoom")}
+                                      aria-label={t("common.enterTheInterviewRoom")}
+                                      onClick={() =>
+                                        navigate(`/mentor/sessions/room/${session.id}`, {
+                                          state: { returnTo: "/mentor?tab=sessions" },
+                                        })
+                                      }>
+                                      <LogIn className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                  {session.status === "DRAFT" && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                                        title={t("common.accept")}
+                                        aria-label={t("common.accept")}
+                                        disabled={updateStatusMutation.isPending}
+                                        onClick={() =>
+                                          session.id &&
+                                          updateStatusMutation.mutate({
+                                            sessionId: session.id,
+                                            isApproved: true,
+                                          })
+                                        }>
+                                        <Check className="h-3.5 w-3.5" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                                        title={t("common.reject")}
+                                        aria-label={t("common.reject")}
+                                        disabled={updateStatusMutation.isPending}
+                                        onClick={() =>
+                                          session.id &&
+                                          updateStatusMutation.mutate({
+                                            sessionId: session.id,
+                                            isApproved: false,
+                                          })
+                                        }>
+                                        <X className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </>
+                                  )}
+                                  {session.status === "COMPLETED" && (
+                                    <Button
+                                      variant={hasReview ? "outline" : "default"}
+                                      size="icon"
+                                      className={`h-8 w-8 ${
+                                        hasReview
+                                          ? ""
+                                          : "bg-indigo-600 text-white hover:bg-indigo-700"
+                                      }`}
+                                      title={
+                                        hasReview ? t("common.editReview") : t("common.writeReview")
+                                      }
+                                      aria-label={
+                                        hasReview ? t("common.editReview") : t("common.writeReview")
+                                      }
+                                      onClick={() =>
+                                        navigate(`/mentor/sessions/${session.id}/review/view`, {
+                                          state: {
+                                            returnTo: "/mentor?tab=sessions",
+                                            edit: hasReview,
+                                          },
+                                        })
+                                      }>
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {sortedData.length > 0 && (
+                <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+                  <PaginationControl
+                    pagination={pagination}
+                    showBoundaryButtons={false}
+                    showPageJump={false}
+                    onPageSizeChange={(size) => {
+                      setPageSize(size);
+                      pagination.goToFirstPage();
+                    }}
+                  />
+                </div>
+              )}
+            </section>
+          )}
         </div>
       )}
     </div>

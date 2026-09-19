@@ -10,7 +10,7 @@ import {
 import { useAssignedMentors, type MentorResponse } from "@/hooks/useApplicationDetails";
 import { useMentorById } from "@/hooks/useMentor";
 import { formatDateTime } from "@/lib/formatting";
-import { CalendarX2, MessageSquareX } from "lucide-react";
+import { CalendarX2, ChevronDown, MessageSquareX } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -39,44 +39,47 @@ export function ScheduleHistoryTable({
   );
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3 dark:border-slate-800">
+    <details className="group overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 focus-visible:outline-2 focus-visible:outline-indigo-500 [&::-webkit-details-marker]:hidden">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           {t("mentorSchedule.historyTitle")}
         </h3>
-        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <span className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           {entries.length}
+          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
         </span>
+      </summary>
+      <div className="overflow-x-auto border-t border-slate-200 dark:border-slate-800">
+        <Table className="md:min-w-[780px]">
+          <TableHeader className="hidden md:table-header-group">
+            <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-800/40 dark:hover:bg-slate-800/40">
+              <TableHead className="w-[230px] pl-5 text-xs text-slate-600 dark:text-slate-300">
+                {t("mentorSchedule.historyEvent")}
+              </TableHead>
+              <TableHead className="w-[230px] text-xs text-slate-600 dark:text-slate-300">
+                {t("mentorSchedule.historyMentor")}
+              </TableHead>
+              <TableHead className="min-w-[180px] text-xs text-slate-600 dark:text-slate-300">
+                {t("mentorSchedule.historyReason")}
+              </TableHead>
+              <TableHead className="w-[165px] pr-5 text-right text-xs text-slate-600 dark:text-slate-300">
+                {t("mentorSchedule.historyTime")}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedEntries.map((entry, index) => (
+              <ScheduleHistoryRow
+                key={`${entry.occurredAt ?? "event"}-${index}`}
+                entry={entry}
+                mentor={mentors.find((item) => item.id === entry.mentorId)}
+                assignedMentorsLoading={assignedMentorsLoading}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </div>
-      <Table className="md:min-w-[780px]">
-        <TableHeader className="hidden md:table-header-group">
-          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 dark:bg-slate-800/40 dark:hover:bg-slate-800/40">
-            <TableHead className="w-[230px] pl-5 text-xs text-slate-600 dark:text-slate-300">
-              {t("mentorSchedule.historyEvent")}
-            </TableHead>
-            <TableHead className="w-[230px] text-xs text-slate-600 dark:text-slate-300">
-              {t("mentorSchedule.historyMentor")}
-            </TableHead>
-            <TableHead className="min-w-[180px] text-xs text-slate-600 dark:text-slate-300">
-              {t("mentorSchedule.historyReason")}
-            </TableHead>
-            <TableHead className="w-[165px] pr-5 text-right text-xs text-slate-600 dark:text-slate-300">
-              {t("mentorSchedule.historyTime")}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedEntries.map((entry, index) => (
-            <ScheduleHistoryRow
-              key={`${entry.occurredAt ?? "event"}-${index}`}
-              entry={entry}
-              mentor={mentors.find((item) => item.id === entry.mentorId)}
-              assignedMentorsLoading={assignedMentorsLoading}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </section>
+    </details>
   );
 }
 
