@@ -948,15 +948,6 @@ export function EmailSimulatorModule({
                           )}
                           <div className="flex flex-wrap items-center gap-2">
                             <MetricResultIcon passed={metric.passed} />
-                            {metric.weightedScore !== null && (
-                              <Badge
-                                variant="outline"
-                                className="rounded-md border-slate-200 bg-white px-2.5 py-1 font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                                {t("structuredAiFeedback.weightedScore", {
-                                  score: metric.weightedScore,
-                                })}
-                              </Badge>
-                            )}
                           </div>
                         </div>
 

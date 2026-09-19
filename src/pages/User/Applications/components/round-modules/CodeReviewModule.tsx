@@ -1937,14 +1937,7 @@ function GradedResultView({
                           : t("structuredAiFeedback.notAvailable")}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {metric.weightedScore !== null && (
-                        <span className="mr-2">
-                          {t("structuredAiFeedback.weightedScore", {
-                            score: metric.weightedScore,
-                          })}
-                        </span>
-                      )}
+                    <p className="mt-2">
                       <MetricResultIcon passed={metric.passed} />
                     </p>
                     {metric.feedback && (
