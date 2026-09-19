@@ -1,3 +1,8 @@
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -81,18 +86,16 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
         <div className="space-y-1 text-slate-700 dark:text-slate-300">
           {feedback.metricResults.map((metric, index) => (
             <div key={`${metric.code || "metric"}-${index}`}>
-              <strong>
-                {metric.code || t("adminApplicationManagement.metric", "Tiêu chí")}
-                {metric.name ? ` - ${metric.name}` : ""}:
+              <strong className="inline-flex items-center gap-2">
+                {metric.code && <MetricCodeBadge code={metric.code} />}
+                <span>
+                  {metric.name || (!metric.code && t("adminApplicationManagement.metric"))}:
+                </span>
               </strong>{" "}
               {formatScoreLabel(t("structuredAiFeedback.score"), metric.score) ||
                 t("structuredAiFeedback.notAvailable")}
               {metric.feedback ? ` - ${metric.feedback}` : ""}
-              {metric.evidence && (
-                <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
-                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
-                </div>
-              )}
+              {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
               <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                 {metric.weightedScore !== null && (
                   <span className="mr-2">
@@ -101,13 +104,7 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
                     })}
                   </span>
                 )}
-                {t(
-                  metric.passed === true
-                    ? "structuredAiFeedback.passed"
-                    : metric.passed === false
-                      ? "structuredAiFeedback.failed"
-                      : "structuredAiFeedback.notAssessed"
-                )}
+                <MetricResultIcon passed={metric.passed} />
               </div>
             </div>
           ))}

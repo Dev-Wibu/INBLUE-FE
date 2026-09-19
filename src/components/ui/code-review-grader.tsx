@@ -1,3 +1,8 @@
+import {
+  MetricCodeBadge,
+  MetricEvidence,
+  MetricResultIcon,
+} from "@/components/shared/MetricResultDetails";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { NormalizedCodeReviewProblem } from "@/hooks/useCodeReviewProblems";
@@ -230,9 +235,11 @@ function AIFeedbackView({
           {feedback.metricResults.map((metric, index) => (
             <div key={`${metric.code ?? "metric"}-${index}`} className="text-xs">
               <div className="flex items-center justify-between gap-2 font-semibold text-slate-700 dark:text-slate-200">
-                <span>
-                  {metric.code ?? t("structuredAiFeedback.unknownMetric")}
-                  {metric.name ? ` - ${metric.name}` : ""}
+                <span className="flex items-center gap-2">
+                  {metric.code && <MetricCodeBadge code={metric.code} />}
+                  <span>
+                    {metric.name || (!metric.code && t("structuredAiFeedback.unknownMetric"))}
+                  </span>
                 </span>
                 <span>
                   {metric.score !== null
@@ -246,22 +253,12 @@ function AIFeedbackView({
                     {t("structuredAiFeedback.weightedScore", { score: metric.weightedScore })}
                   </span>
                 )}
-                {t(
-                  metric.passed === true
-                    ? "structuredAiFeedback.passed"
-                    : metric.passed === false
-                      ? "structuredAiFeedback.failed"
-                      : "structuredAiFeedback.notAssessed"
-                )}
+                <MetricResultIcon passed={metric.passed} />
               </p>
               {metric.feedback && (
                 <p className="mt-1 text-slate-600 dark:text-slate-400">{metric.feedback}</p>
               )}
-              {metric.evidence && (
-                <p className="mt-1 text-slate-500 dark:text-slate-400">
-                  <strong>{t("structuredAiFeedback.evidence")}:</strong> {metric.evidence}
-                </p>
-              )}
+              {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
             </div>
           ))}
         </div>
