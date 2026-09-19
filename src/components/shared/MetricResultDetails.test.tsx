@@ -15,16 +15,16 @@ describe("metric result details", () => {
   });
 
   it.each([
-    [true, "structuredAiFeedback.passed", "text-indigo-600"],
-    [false, "structuredAiFeedback.failed", "text-red-500"],
-    [null, "structuredAiFeedback.notAssessed", "text-gray-400"],
+    [true, "structuredAiFeedback.passed", "text-emerald-700"],
+    [false, "structuredAiFeedback.failed", "text-rose-700"],
+    [null, "structuredAiFeedback.notAssessed", "text-slate-600"],
   ])("labels and colors the icon for result %s", (passed, label, colorClass) => {
     render(<MetricResultIcon passed={passed} />);
     const status = screen.getByRole("img", { name: label });
     expect(status).toBeInTheDocument();
     expect(status).toHaveClass(colorClass);
-    expect(status).not.toHaveClass("border", "shadow-xs", "bg-emerald-50");
-    expect(status.querySelector("svg")).toHaveAttribute("width", "22");
+    expect(status).toHaveClass("h-8", "rounded-full", "border");
+    expect(screen.getByText(label)).toBeInTheDocument();
   });
 
   it("keeps evidence collapsed until requested", () => {

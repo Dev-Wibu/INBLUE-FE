@@ -1925,11 +1925,12 @@ function GradedResultView({
                 {feedback.metricResults.map((metric, index) => (
                   <div key={`${metric.code ?? "metric"}-${index}`} className="text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
+                      <span className="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-100">
                         {metric.code && <MetricCodeBadge code={metric.code} />}
                         <span>
                           {metric.name || (!metric.code && t("structuredAiFeedback.unknownMetric"))}
                         </span>
+                        <MetricResultIcon passed={metric.passed} />
                       </span>
                       <span className="font-bold text-indigo-600 dark:text-indigo-400">
                         {metric.score !== null
@@ -1937,9 +1938,6 @@ function GradedResultView({
                           : t("structuredAiFeedback.notAvailable")}
                       </span>
                     </div>
-                    <p className="mt-2">
-                      <MetricResultIcon passed={metric.passed} />
-                    </p>
                     {metric.feedback && (
                       <p className="mt-1 leading-relaxed text-slate-600 dark:text-slate-300">
                         {metric.feedback}

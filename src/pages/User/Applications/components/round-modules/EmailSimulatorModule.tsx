@@ -913,10 +913,15 @@ export function EmailSimulatorModule({
                           <div className="flex min-w-0 items-start gap-3">
                             {showCodeChip && <MetricCodeBadge code={metric.code!} />}
                             <div className="min-w-0 pt-0.5">
-                              <h5 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                {metric.name ??
-                                  metric.code ??
-                                  t("structuredAiFeedback.unknownMetric")}
+                              <h5 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                                <span className="inline-flex items-center gap-2">
+                                  <span>
+                                    {metric.name ??
+                                      metric.code ??
+                                      t("structuredAiFeedback.unknownMetric")}
+                                  </span>
+                                  <MetricResultIcon passed={metric.passed} />
+                                </span>
                               </h5>
                               {metric.definition?.description && (
                                 <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -946,9 +951,6 @@ export function EmailSimulatorModule({
                               className="h-2 bg-slate-100 dark:bg-slate-800 [&_[data-slot=progress-indicator]]:bg-indigo-600 dark:[&_[data-slot=progress-indicator]]:bg-indigo-400"
                             />
                           )}
-                          <div className="flex flex-wrap items-center gap-2">
-                            <MetricResultIcon passed={metric.passed} />
-                          </div>
                         </div>
 
                         {metric.feedback && (
