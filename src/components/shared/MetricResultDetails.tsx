@@ -1,4 +1,9 @@
-import { ChevronDown, CircleDashed, ScanSearch, ShieldCheck, ShieldX } from "lucide-react";
+import {
+  CheckCircle as PhosphorCheckCircle,
+  CircleDashed as PhosphorCircleDashed,
+  XCircle as PhosphorXCircle,
+} from "@phosphor-icons/react";
+import { ChevronDown, ScanSearch } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function MetricCodeBadge({ code }: { code: string }) {
@@ -18,7 +23,12 @@ export function MetricResultIcon({ passed }: { passed: boolean | null | undefine
         ? "structuredAiFeedback.failed"
         : "structuredAiFeedback.notAssessed"
   );
-  const Icon = passed === true ? ShieldCheck : passed === false ? ShieldX : CircleDashed;
+  const Icon =
+    passed === true
+      ? PhosphorCheckCircle
+      : passed === false
+        ? PhosphorXCircle
+        : PhosphorCircleDashed;
   return (
     <span
       role="img"
@@ -26,12 +36,12 @@ export function MetricResultIcon({ passed }: { passed: boolean | null | undefine
       title={label}
       className={
         passed === true
-          ? "relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 shadow-[inset_0_0_0_3px_rgba(16,185,129,0.08),0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-emerald-100 dark:border-emerald-500/50 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/20"
+          ? "inline-flex shrink-0 leading-none text-indigo-600 dark:text-indigo-400"
           : passed === false
-            ? "relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-rose-300 bg-rose-50 text-rose-700 shadow-[inset_0_0_0_3px_rgba(244,63,94,0.07),0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-rose-100 dark:border-rose-500/50 dark:bg-rose-500/15 dark:text-rose-300 dark:ring-rose-500/20"
-            : "relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-300 bg-amber-50 text-amber-700 shadow-[inset_0_0_0_3px_rgba(245,158,11,0.07),0_1px_2px_rgba(15,23,42,0.08)] ring-1 ring-amber-100 dark:border-amber-500/50 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/20"
+            ? "inline-flex shrink-0 leading-none text-red-500"
+            : "inline-flex shrink-0 leading-none text-gray-400 dark:text-gray-500"
       }>
-      <Icon aria-hidden="true" className="h-[18px] w-[18px] stroke-[2.25]" />
+      <Icon aria-hidden="true" size={22} weight={passed == null ? "duotone" : "fill"} />
     </span>
   );
 }

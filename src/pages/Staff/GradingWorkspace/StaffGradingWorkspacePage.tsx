@@ -28,7 +28,6 @@ import {
   RefreshCw,
   Save,
   Send,
-  Sparkles,
   Star,
   Trophy,
   User,
@@ -180,6 +179,71 @@ function AiInterviewPendingNotice({ status }: { status: string }) {
 // ============================================================
 // Inline Grading Form for Staff (replaces modal)
 // ============================================================
+
+function DecisionSegmentedControl({
+  value,
+  disabled = false,
+  onChange,
+}: {
+  value: boolean;
+  disabled?: boolean;
+  onChange?: (_value: boolean) => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="relative grid h-11 grid-cols-2 overflow-hidden rounded-lg border border-slate-300 bg-slate-100 p-1 dark:border-slate-600 dark:bg-slate-800">
+      <span
+        aria-hidden="true"
+        data-testid="staff-decision-indicator"
+        className={cn(
+          "pointer-events-none absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-md transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+          value ? "translate-x-0 bg-indigo-600" : "translate-x-full bg-rose-600"
+        )}
+      />
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={value}
+        onClick={() => onChange?.(true)}
+        className={cn(
+          "relative z-10 flex items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none",
+          value
+            ? "text-white"
+            : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+          disabled && "cursor-not-allowed"
+        )}>
+        <CheckCircle2
+          className={cn(
+            "h-4 w-4 transition-transform duration-300 motion-reduce:transition-none",
+            value ? "scale-110 text-white" : "text-slate-400"
+          )}
+        />
+        {t("userApplicationhistory.passed")}
+      </button>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={!value}
+        onClick={() => onChange?.(false)}
+        className={cn(
+          "relative z-10 flex items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition-colors duration-200 motion-reduce:transition-none",
+          !value
+            ? "text-white"
+            : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+          disabled && "cursor-not-allowed"
+        )}>
+        <XCircle
+          className={cn(
+            "h-4 w-4 transition-transform duration-300 motion-reduce:transition-none",
+            !value ? "scale-110 text-white" : "text-slate-400"
+          )}
+        />
+        {t("userApplicationhistory.failed")}
+      </button>
+    </div>
+  );
+}
 
 function InlineGradingForm({
   detail,
@@ -359,50 +423,23 @@ function InlineGradingForm({
           </h4>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[150px_230px_minmax(240px,1fr)]">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-              {t("grading.hrScore")}
-            </label>
-            <div className="flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-base font-semibold text-slate-700 tabular-nums dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
-              <Lock className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
-              {detail.hrScore}/100
+        <div className="space-y-4">
+          <div className="grid max-w-2xl gap-4 lg:grid-cols-[minmax(170px,220px)_minmax(280px,360px)]">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {t("grading.hrScore")}
+              </label>
+              <div className="flex h-11 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-base font-semibold text-slate-700 tabular-nums dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                <Lock className="mr-1.5 h-3.5 w-3.5 text-slate-400" />
+                {detail.hrScore}/100
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
-              {t("grading.decision")}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled
-                aria-pressed={isPass}
-                className={cn(
-                  "flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold",
-                  isPass
-                    ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                    : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
-                )}>
-                <CheckCircle2
-                  className={cn("h-4 w-4", isPass ? "text-emerald-500" : "text-slate-400")}
-                />
-                {t("userApplicationhistory.passed")}
-              </button>
-              <button
-                type="button"
-                disabled
-                aria-pressed={!isPass}
-                className={cn(
-                  "flex h-11 cursor-not-allowed items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold",
-                  !isPass
-                    ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                    : "border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
-                )}>
-                <XCircle className={cn("h-4 w-4", !isPass ? "text-rose-500" : "text-slate-400")} />
-                {t("userApplicationhistory.failed")}
-              </button>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {t("grading.decision")}
+              </div>
+              <DecisionSegmentedControl value={isPass} disabled />
             </div>
           </div>
           <div className="space-y-2">
@@ -417,8 +454,8 @@ function InlineGradingForm({
               onChange={(e) => handleNoteChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
               placeholder={t("grading.enterHrNotes")}
-              rows={2}
-              className="min-h-11 resize-none rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
+              rows={4}
+              className="h-24 max-h-32 min-h-24 resize-none overflow-y-auto rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
             />
           </div>
         </div>
@@ -433,10 +470,7 @@ function InlineGradingForm({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={cn(
-              "h-9 gap-1.5 rounded-lg px-4 text-sm font-semibold text-white transition-colors disabled:opacity-50",
-              isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
-            )}>
+            className="h-9 gap-1.5 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400">
             {isSubmitting ? (
               <>
                 <Spinner className="h-3 w-3 text-white" />
@@ -471,88 +505,48 @@ function InlineGradingForm({
         </span>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[150px_230px_minmax(240px,1fr)]">
-        <div className="space-y-2">
-          <label
-            htmlFor="staff-score"
-            className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-            {t("grading.hrScore")}
-          </label>
-          <div className="relative">
-            <Input
-              id="staff-score"
-              type="number"
-              min="0"
-              max="100"
-              value={score}
-              onChange={(e) => handleScoreChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-              placeholder="0"
-              className={cn(
-                "h-11 rounded-lg border bg-white pr-12 text-center text-lg font-semibold tabular-nums shadow-xs dark:bg-slate-900",
-                scoreError
-                  ? "border-rose-400"
-                  : "border-slate-300 focus:border-indigo-500 dark:border-slate-600"
-              )}
-            />
-            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400">
-              /100
-            </span>
-          </div>
-          {scoreError && (
-            <p className="flex items-center gap-1 text-xs font-medium text-rose-600">
-              <AlertTriangle className="h-3 w-3" />
-              {scoreError}
-            </p>
-          )}
-          {aiEvaluationScore !== null && detail.status !== "PENDING" && (
-            <button
-              type="button"
-              onClick={() =>
-                handleScoreChange(
-                  formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? "0"
-                )
-              }
-              className="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
-              <Sparkles className="h-3 w-3" />
-              {t("staffGrading.aiScore", {
-                score: formatAiInterviewScore(aiEvaluationScore, aiScoreScale ?? "auto") ?? 0,
-              })}
-            </button>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-            {t("grading.decision")}
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handlePassChange(true)}
-              className={cn(
-                "flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors",
-                isPass
-                  ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-              )}>
-              <CheckCircle2
-                className={cn("h-4 w-4", isPass ? "text-emerald-500" : "text-slate-400")}
+      <div className="space-y-4">
+        <div className="grid max-w-2xl gap-4 lg:grid-cols-[minmax(170px,220px)_minmax(280px,360px)]">
+          <div className="space-y-2">
+            <label
+              htmlFor="staff-score"
+              className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              {t("grading.hrScore")}
+            </label>
+            <div className="relative">
+              <Input
+                id="staff-score"
+                type="number"
+                min="0"
+                max="100"
+                value={score}
+                onChange={(e) => handleScoreChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                placeholder="0"
+                className={cn(
+                  "h-11 rounded-lg border bg-white pr-12 text-center text-lg font-semibold tabular-nums shadow-xs dark:bg-slate-900",
+                  scoreError
+                    ? "border-rose-400"
+                    : "border-slate-300 focus:border-indigo-500 dark:border-slate-600"
+                )}
               />
-              {t("userApplicationhistory.passed")}
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePassChange(false)}
-              className={cn(
-                "flex h-11 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold transition-colors",
-                !isPass
-                  ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-rose-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-              )}>
-              <XCircle className={cn("h-4 w-4", !isPass ? "text-rose-500" : "text-slate-400")} />
-              {t("userApplicationhistory.failed")}
-            </button>
+              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-slate-400">
+                /100
+              </span>
+            </div>
+            {scoreError && (
+              <p className="flex items-center gap-1 text-xs font-medium text-rose-600">
+                <AlertTriangle className="h-3 w-3" />
+                {scoreError}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              {t("grading.decision")}
+            </label>
+            <DecisionSegmentedControl value={isPass} onChange={handlePassChange} />
           </div>
         </div>
         <div className="space-y-2">
@@ -567,8 +561,8 @@ function InlineGradingForm({
             onChange={(e) => handleNoteChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && e.ctrlKey && e.preventDefault()}
             placeholder={t("grading.enterHrNotes")}
-            rows={2}
-            className="min-h-11 resize-none rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
+            rows={4}
+            className="h-24 max-h-32 min-h-24 resize-none overflow-y-auto rounded-lg border border-slate-300 bg-white text-sm shadow-xs dark:border-slate-600 dark:bg-slate-900"
           />
         </div>
       </div>
@@ -583,10 +577,7 @@ function InlineGradingForm({
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || scoreError !== null || score.trim() === ""}
-          className={cn(
-            "h-9 gap-1.5 rounded-lg px-4 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-            isPass ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
-          )}>
+          className="h-9 gap-1.5 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400">
           {isSubmitting ? (
             <>
               <Spinner className="h-3 w-3 text-white" />
@@ -620,7 +611,6 @@ function StaffGradingWorkspaceHeaderCard({
   isEditing,
   onSuccess,
   onCancel,
-  onSafeClose,
   onDirtyChange,
 }: {
   selectedRoundOrder: number;
@@ -634,7 +624,6 @@ function StaffGradingWorkspaceHeaderCard({
   isEditing?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
-  onSafeClose: () => void;
   onDirtyChange?: (_dirty: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -665,6 +654,11 @@ function StaffGradingWorkspaceHeaderCard({
     : aiScore != null
       ? String(Math.round(aiScore))
       : null;
+  const displayedScore = hasHrScore ? hrScore : normalizedAiScore;
+  const numericDisplayedScore = Number(displayedScore);
+  const displayedScorePercent = Number.isFinite(numericDisplayedScore)
+    ? Math.min(100, Math.max(0, numericDisplayedScore))
+    : 0;
   const translatedType = typeKey ? t(`common.roundType.${typeKey}`, typeKey) : null;
   const roundName =
     localizeRoundName(activeRound?.name, typeKey, t) ||
@@ -713,13 +707,6 @@ function StaffGradingWorkspaceHeaderCard({
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 {detail?.status ?? "PENDING"}
-              </span>
-            )}
-
-            {normalizedAiScore !== null && detail?.status !== "PENDING" && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/15 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
-                <Star className="h-3.5 w-3.5 text-purple-500" />
-                {t("staffGrading.aiScore", { score: normalizedAiScore })}
               </span>
             )}
           </div>
@@ -779,17 +766,12 @@ function StaffGradingWorkspaceHeaderCard({
           {/* Expanded Grading Form - drops down from header */}
           {isEditing && detail && (
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-950/40">
-              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
+              <div className="border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
                 <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
                   {hasHrScore
                     ? t("grading.editScore", "Chỉnh sửa điểm")
                     : t("grading.hrGrading", "Chấm điểm HR")}
                 </span>
-                <button
-                  onClick={onSafeClose}
-                  className="text-[10px] font-semibold text-slate-400 hover:text-slate-600">
-                  {t("common.close")}
-                </button>
               </div>
               <div className="p-4">
                 <InlineGradingForm
@@ -813,12 +795,23 @@ function StaffGradingWorkspaceHeaderCard({
               {hasHrScore ? t("staffGrading.roundResult") : t("staffGrading.roundScore")}
             </p>
             <div className="mt-1 flex items-baseline gap-1 text-slate-950 dark:text-white">
-              <span className="text-3xl font-semibold tabular-nums">
-                {hasHrScore ? hrScore : (normalizedAiScore ?? "—")}
-              </span>
+              <span className="text-3xl font-semibold tabular-nums">{displayedScore ?? "—"}</span>
               {(hasHrScore || normalizedAiScore !== null) && (
                 <span className="text-sm text-slate-500">/100</span>
               )}
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  hasHrScore
+                    ? isPass
+                      ? "bg-indigo-600 dark:bg-indigo-400"
+                      : "bg-rose-500"
+                    : "bg-indigo-600 dark:bg-indigo-400"
+                )}
+                style={{ width: `${displayedScorePercent}%` }}
+              />
             </div>
             <p
               className={cn(
@@ -1257,8 +1250,7 @@ export function StaffGradingWorkspacePage() {
           onOpenGrading={handleOpenGrading}
           isEditing={isGradingEditing}
           onSuccess={handleGradingSuccess}
-          onCancel={() => setIsGradingEditing(false)}
-          onSafeClose={handleSafeGradingClose}
+          onCancel={handleSafeGradingClose}
           onDirtyChange={setIsGradingDirty}
         />
 

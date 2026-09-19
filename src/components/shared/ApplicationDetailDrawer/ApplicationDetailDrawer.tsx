@@ -96,14 +96,7 @@ function renderAiFeedback(feedback: NormalizedAiFeedback | null, t: any) {
                 t("structuredAiFeedback.notAvailable")}
               {metric.feedback ? ` - ${metric.feedback}` : ""}
               {metric.evidence && <MetricEvidence evidence={metric.evidence} />}
-              <div className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
-                {metric.weightedScore !== null && (
-                  <span className="mr-2">
-                    {t("structuredAiFeedback.weightedScore", {
-                      score: metric.weightedScore,
-                    })}
-                  </span>
-                )}
+              <div className="mt-2">
                 <MetricResultIcon passed={metric.passed} />
               </div>
             </div>
