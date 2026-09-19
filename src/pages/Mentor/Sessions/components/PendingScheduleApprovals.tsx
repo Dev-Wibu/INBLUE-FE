@@ -58,7 +58,7 @@ export function PendingScheduleApprovals() {
   };
 
   return (
-    <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <section className="mb-6 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col gap-1 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <div>
           <h2 className="text-base font-semibold text-slate-950 dark:text-white">
@@ -94,10 +94,15 @@ export function PendingScheduleApprovals() {
         </div>
       ) : (
         <div className="divide-y divide-slate-200 dark:divide-slate-800">
+          <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 bg-slate-50 px-5 py-2 text-xs font-semibold text-slate-500 md:grid dark:bg-slate-950/40 dark:text-slate-400">
+            <span>{t("common.candidate")}</span>
+            <span>{t("userApplicationhistory.mentorSessionFieldTime")}</span>
+            <span>{t("common.actions")}</span>
+          </div>
           {data.map((item) => (
             <div
               key={item.applicationDetailId}
-              className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+              className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center">
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar className="h-10 w-10 shrink-0 rounded-lg">
                   <AvatarImage src={item.candidateAvatarUrl ?? undefined} />
@@ -109,22 +114,22 @@ export function PendingScheduleApprovals() {
                   <p className="truncate text-sm font-semibold text-slate-950 dark:text-white">
                     {item.candidateName || item.candidateEmail || t("common.candidate")}
                   </p>
-                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
-                    <span className="inline-flex items-center gap-1.5">
-                      <CalendarClock className="h-3.5 w-3.5 text-indigo-500" />
-                      {item.proposedJoinTime
-                        ? formatUtcNaiveDateTime(item.proposedJoinTime)
-                        : t("common.notAvailable")}
-                      {` · ${t("mentorSchedule.duration", { count: item.proposedDurationMinutes ?? 60 })}`}
-                    </span>
-                    {item.jobTitle && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Briefcase className="h-3.5 w-3.5" />
-                        {item.jobTitle}
-                      </span>
-                    )}
-                  </div>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarClock className="h-3.5 w-3.5 text-indigo-500" />
+                  {item.proposedJoinTime
+                    ? formatUtcNaiveDateTime(item.proposedJoinTime)
+                    : t("common.notAvailable")}
+                  {` · ${t("mentorSchedule.duration", { count: item.proposedDurationMinutes ?? 60 })}`}
+                </span>
+                {item.jobTitle && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Briefcase className="h-3.5 w-3.5" />
+                    {item.jobTitle}
+                  </span>
+                )}
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button
@@ -163,7 +168,7 @@ export function PendingScheduleApprovals() {
             setReason("");
           }
         }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="border-slate-200 bg-white text-slate-900 sm:max-w-md dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
           <DialogHeader>
             <DialogTitle>
               {mode === "approve"
