@@ -2474,25 +2474,28 @@ function SessionRoomStep({
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
             <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => {
-                  if (readOnly) return;
-                  if (session.roomUrl) {
+              {meetingType === "OFFLINE" ? (
+                <div className="flex min-h-11 flex-1 items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-800 dark:border-blue-800/60 dark:bg-blue-950/30 dark:text-blue-200">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span>{t("userApplicationhistory.mentorSessionOfflineConfirmed")}</span>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => {
+                    if (readOnly || !session.roomUrl) return;
                     window.location.href = `/user/sessions/room/${session.id}`;
-                  } else {
-                    toast.info(t("userApplicationhistory.mentorSessionOfflineToast"));
-                  }
-                }}
-                disabled={readOnly || !canEnter}
-                className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
-                <LogIn className="h-4 w-4" />
-                {joinAvailability.isAfterJoinWindow
-                  ? t("userApplicationhistory.mentorSessionWindowClosed")
-                  : session.status === "ONGOING"
-                    ? t("userApplicationhistory.mentorSessionJoinOngoing")
-                    : t("userApplicationhistory.mentorSessionJoinVideoCall")}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+                  }}
+                  disabled={readOnly || !canEnter}
+                  className="h-11 flex-1 gap-2 bg-indigo-600 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">
+                  <LogIn className="h-4 w-4" />
+                  {joinAvailability.isAfterJoinWindow
+                    ? t("userApplicationhistory.mentorSessionWindowClosed")
+                    : session.status === "ONGOING"
+                      ? t("userApplicationhistory.mentorSessionJoinOngoing")
+                      : t("userApplicationhistory.mentorSessionJoinVideoCall")}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {
