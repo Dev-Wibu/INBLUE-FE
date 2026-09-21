@@ -18,7 +18,7 @@ import {
   usePendingMentorSchedules,
 } from "@/hooks/useApplicationDetails";
 import { formatUtcNaiveDateTime } from "@/lib/formatting";
-import { Briefcase, CalendarClock, Check, Inbox, Loader2, X } from "lucide-react";
+import { Briefcase, CalendarClock, Check, Inbox, Loader2, MapPin, Video, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -29,10 +29,16 @@ export function PendingScheduleApprovals() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [mode, setMode] = useState<"approve" | "reject" | null>(null);
   const [reason, setReason] = useState("");
+  const selectedProposal = data.find((item) => item.applicationDetailId === selectedId);
+  const selectedIsOffline = selectedProposal?.meetingType === "OFFLINE";
   const decision = useMentorScheduleDecision({
     onSuccess: () => {
       toast.success(
-        mode === "approve" ? t("mentorSchedule.approved") : t("mentorSchedule.rejected")
+        mode === "approve"
+          ? selectedIsOffline
+            ? t("mentorSchedule.approvedOffline")
+            : t("mentorSchedule.approved")
+          : t("mentorSchedule.rejected")
       );
       setSelectedId(null);
       setMode(null);
@@ -96,15 +102,16 @@ export function PendingScheduleApprovals() {
           </div>
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-slate-800">
-            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 bg-slate-50 px-5 py-2 text-xs font-semibold text-slate-500 md:grid dark:bg-slate-950/40 dark:text-slate-400">
+            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(120px,0.45fr)_auto] gap-4 bg-slate-50 px-5 py-2 text-xs font-semibold text-slate-500 md:grid dark:bg-slate-950/40 dark:text-slate-400">
               <span>{t("common.candidate")}</span>
               <span>{t("userApplicationhistory.mentorSessionFieldTime")}</span>
+              <span>{t("mentorSchedule.meetingType")}</span>
               <span>{t("common.actions")}</span>
             </div>
             {data.map((item) => (
               <div
                 key={item.applicationDetailId}
-                className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-center">
+                className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(120px,0.45fr)_auto] md:items-center">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar className="h-10 w-10 shrink-0 rounded-lg">
                     <AvatarImage src={item.candidateAvatarUrl ?? undefined} />
@@ -133,6 +140,18 @@ export function PendingScheduleApprovals() {
                     </span>
                   )}
                 </div>
+                <Badge
+                  variant="outline"
+                  className="w-fit gap-1.5 border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  {item.meetingType === "OFFLINE" ? (
+                    <MapPin className="h-3.5 w-3.5 text-blue-600 dark:text-blue-300" />
+                  ) : (
+                    <Video className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                  )}
+                  {item.meetingType === "OFFLINE"
+                    ? t("mentorSchedule.offline")
+                    : t("mentorSchedule.online")}
+                </Badge>
                 <div className="flex shrink-0 gap-2">
                   <Button
                     size="sm"
@@ -180,7 +199,9 @@ export function PendingScheduleApprovals() {
             </DialogTitle>
             <DialogDescription>
               {mode === "approve"
-                ? t("mentorSchedule.approveDescription")
+                ? selectedIsOffline
+                  ? t("mentorSchedule.approveOfflineDescription")
+                  : t("mentorSchedule.approveDescription")
                 : t("mentorSchedule.pendingDescription")}
             </DialogDescription>
           </DialogHeader>
