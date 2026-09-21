@@ -12,6 +12,7 @@ import {
   type RealtimeTranscriptionHandle,
 } from "@/services/kiosk/realtimeTranscription";
 import { playTtsAudioBlob, type TtsPlayback } from "@/services/kiosk/ttsAudio";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { buildKioskResumeMessages } from "./kiosk-interview-resume";
 
@@ -24,6 +25,7 @@ interface KioskAIInterviewRoomPageProps {
   initialSessionCache?: InterviewSessionRedis;
   experienceMode?: "kiosk" | "web";
   onFinish?: () => void;
+  onInterviewFinished?: () => void;
 }
 
 type AIState = "IDLE" | "THINKING" | "SPEAKING" | "LISTENING";
@@ -32,38 +34,6 @@ const audioWaveRestingLevels = [
   0.55, 0.78, 1.05, 0.72, 1.25, 0.88, 1.42, 1.08, 1.62, 1.08, 1.42, 0.88, 1.25, 0.72, 1.05, 0.78,
   0.55,
 ];
-
-const DEFAULT_MESSAGES: ChatMessage[] = [
-  {
-    id: 1,
-    role: "ai",
-    content:
-      "Chào Thành Lam, mình đã xem qua hồ sơ của bạn với GPA khá ấn tượng tại FPT University. Bạn có thể giới thiệu ngắn gọn về bản thân và chia sẻ lý do tại sao một người có kinh nghiệm làm .NET Intern như bạn lại muốn ứng tuyển vị trí Java Backend tại công ty mình không?",
-    timestamp: "08:40 PM",
-  },
-  {
-    id: 2,
-    role: "user",
-    content: "Hello Hello Hello Hello Hello",
-    timestamp: "08:41 PM",
-  },
-  {
-    id: 3,
-    role: "ai",
-    content:
-      "Chào bạn, có vẻ như bạn đang rất hào hứng hoặc gặp chút trục trặc khi nhập liệu. Mình vẫn đang đợi phần giới thiệu ngắn gọn về bản thân cũng như lý do bạn muốn chuyển từ .NET sang Java Backend từ bạn nhé. Bạn cứ thoải mái chia sẻ, không cần quá áp lực đâu!",
-    timestamp: "08:41 PM",
-  },
-  {
-    id: 4,
-    role: "user",
-    content: "chịu the Gmail spa Space Space Space",
-    timestamp: "08:42 PM",
-  },
-];
-
-const INITIAL_QUESTION =
-  "Chào bạn, có vẻ như bạn đang rất hào hứng hoặc gặp chút trục trặc khi nhập liệu. Mình vẫn đang đợi phần giới thiệu ngắn gọn về bản thân cũng như lý do bạn muốn chuyển từ .NET sang Java Backend từ bạn nhé. Bạn cứ thoải mái chia sẻ, không cần quá áp lực đâu!";
 
 /* ───── Ultra-Clean Cyber Constellation Canvas Background ───── */
 function CyberCanvasBackground() {
@@ -290,14 +260,15 @@ export function KioskAIInterviewRoomPage({
   initialSessionCache,
   experienceMode = "kiosk",
   onFinish,
+  onInterviewFinished,
 }: KioskAIInterviewRoomPageProps) {
   const [aiState, setAiState] = useState<AIState>("IDLE");
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const resumedMessages = buildKioskResumeMessages(initialSessionCache, initialStartResponse);
-    return resumedMessages.length > 0 ? resumedMessages : DEFAULT_MESSAGES;
+    return resumedMessages;
   });
   const [currentQuestionContent, setCurrentQuestionContent] = useState(
-    initialStartResponse?.questionContent ?? INITIAL_QUESTION
+    initialStartResponse?.questionContent ?? initialSessionCache?.currentQuestionText ?? ""
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
     initialStartResponse?.currentQuestionIndex ?? 1
@@ -323,6 +294,10 @@ export function KioskAIInterviewRoomPage({
 
   // Refs
   const ttsPlaybackRef = useRef<TtsPlayback | null>(null);
+  const speechRequestRef = useRef(0);
+  const submitInFlightRef = useRef(false);
+  const recordingGenerationRef = useRef(0);
+  const transcriptRef = useRef(liveTranscript);
   const transcriptionHandleRef = useRef<RealtimeTranscriptionHandle | null>(null);
   const micAnalyserRef = useRef<AnalyserNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
@@ -332,8 +307,9 @@ export function KioskAIInterviewRoomPage({
 
   // Scroll chat messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, liveTranscript]);
+    const scroller = messagesEndRef.current?.parentElement;
+    if (scroller) scroller.scrollTop = scroller.scrollHeight;
+  }, [messages]);
 
   // Real-time Clock
   useEffect(() => {
@@ -349,8 +325,14 @@ export function KioskAIInterviewRoomPage({
     return () => clearInterval(interval);
   }, []);
 
+  const updateTranscript = useCallback((text: string) => {
+    transcriptRef.current = text;
+    setLiveTranscript(text);
+  }, []);
+
   // Central Orb Continuous Pulse Animation
   useEffect(() => {
+    if (experienceMode === "web") return;
     let animId: number;
     let t = 0;
     const pulseLoop = () => {
@@ -360,7 +342,7 @@ export function KioskAIInterviewRoomPage({
     };
     animId = requestAnimationFrame(pulseLoop);
     return () => cancelAnimationFrame(animId);
-  }, []);
+  }, [experienceMode]);
 
   // Microphone Volume Analyzer
   const startMicVolumeMeter = useCallback(async () => {
@@ -400,10 +382,7 @@ export function KioskAIInterviewRoomPage({
       };
       updateLevel();
     } catch {
-      const interval = setInterval(() => {
-        setWaveLevels(audioWaveRestingLevels.map((base) => base * (0.5 + Math.random() * 0.9)));
-      }, 150);
-      return () => clearInterval(interval);
+      setWaveLevels(audioWaveRestingLevels);
     }
   }, []);
 
@@ -427,50 +406,78 @@ export function KioskAIInterviewRoomPage({
   // Toggle Recording / Mic
   const toggleRecording = useCallback(async () => {
     if (isRecording) {
+      const generation = recordingGenerationRef.current;
       setIsRecording(false);
       stopMicVolumeMeter();
       if (transcriptionHandleRef.current) {
-        await transcriptionHandleRef.current.stop();
+        const handle = transcriptionHandleRef.current;
         transcriptionHandleRef.current = null;
+        await handle.stop();
       }
+      if (generation === recordingGenerationRef.current) recordingGenerationRef.current += 1;
       return;
     }
 
+    const generation = ++recordingGenerationRef.current;
     setIsRecording(true);
     setAiState("LISTENING");
-    void startMicVolumeMeter();
+    if (experienceMode !== "web") void startMicVolumeMeter();
 
     try {
-      const handle = await startRealtimeTranscription(liveTranscript, {
+      const handle = await startRealtimeTranscription(transcriptRef.current, {
         onTranscript: (text) => {
-          setLiveTranscript(text);
+          if (generation === recordingGenerationRef.current) updateTranscript(text);
         },
       });
+      if (generation !== recordingGenerationRef.current) {
+        await handle.stop();
+        return;
+      }
       transcriptionHandleRef.current = handle;
     } catch {
-      setLiveTranscript("Tôi đang chia sẻ câu trả lời của mình trực tiếp vào microphone...");
+      if (generation !== recordingGenerationRef.current) return;
+      setIsRecording(false);
+      stopMicVolumeMeter();
     }
-  }, [isRecording, liveTranscript, startMicVolumeMeter, stopMicVolumeMeter]);
+  }, [experienceMode, isRecording, startMicVolumeMeter, stopMicVolumeMeter, updateTranscript]);
 
   const [spokenQuestionText, setSpokenQuestionText] = useState("");
+
+  const stopQuestionAudio = useCallback(() => {
+    speechRequestRef.current += 1;
+    ttsPlaybackRef.current?.stop();
+    ttsPlaybackRef.current = null;
+    window.speechSynthesis?.cancel();
+  }, []);
 
   // AI Speaks Question with Typewriter Progress Sync & Fallback
   const speakQuestion = useCallback(
     async (text: string) => {
+      stopQuestionAudio();
+      const requestId = speechRequestRef.current;
       setAiState("SPEAKING");
-      setSpokenQuestionText("");
+      setSpokenQuestionText(text);
+      let fallbackStarted = false;
+      const fallback = () => {
+        if (requestId !== speechRequestRef.current || fallbackStarted) return;
+        fallbackStarted = true;
+        if (!("speechSynthesis" in window)) {
+          setAiState("LISTENING");
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "vi-VN";
+        utterance.onend = () => {
+          if (requestId === speechRequestRef.current) setAiState("LISTENING");
+        };
+        window.speechSynthesis.speak(utterance);
+      };
       try {
         const audioBlob = await generateTtsAudioApi(text, selectedVoiceId);
+        if (requestId !== speechRequestRef.current) return;
         const playback = await playTtsAudioBlob(audioBlob, {
-          onProgress: (currentTime, duration) => {
-            if (duration <= 0) return;
-            const progress = Math.max(0, Math.min(1, currentTime / duration));
-            const charCount = Math.floor(text.length * progress);
-            if (charCount > 0) {
-              setSpokenQuestionText(text.slice(0, charCount));
-            }
-          },
           onVolume: (energy) => {
+            if (requestId !== speechRequestRef.current || experienceMode === "web") return;
             setWaveLevels(
               audioWaveRestingLevels.map((base, idx) => {
                 const mult = 0.5 + Math.sin(Date.now() / 120 + idx) * 0.3 + energy * 1.8;
@@ -480,72 +487,62 @@ export function KioskAIInterviewRoomPage({
             setOrbPulse(1 + energy * 0.25);
           },
           onEnd: () => {
-            setSpokenQuestionText(text);
+            if (requestId !== speechRequestRef.current) return;
             setAiState("LISTENING");
             setWaveLevels(audioWaveRestingLevels);
             setOrbPulse(1);
           },
           onError: () => {
-            setSpokenQuestionText(text);
-            if (typeof window !== "undefined" && "speechSynthesis" in window) {
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = "vi-VN";
-              utterance.onend = () => {
-                setAiState("LISTENING");
-                setWaveLevels(audioWaveRestingLevels);
-              };
-              window.speechSynthesis.speak(utterance);
-            } else {
-              setAiState("LISTENING");
-            }
+            fallback();
           },
         });
+        if (requestId !== speechRequestRef.current) {
+          playback.stop();
+          return;
+        }
         ttsPlaybackRef.current = playback;
       } catch {
-        setSpokenQuestionText(text);
-        if (typeof window !== "undefined" && "speechSynthesis" in window) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = "vi-VN";
-          utterance.onend = () => {
-            setAiState("LISTENING");
-            setWaveLevels(audioWaveRestingLevels);
-          };
-          window.speechSynthesis.speak(utterance);
-        } else {
-          setTimeout(() => {
-            setAiState("LISTENING");
-          }, 2000);
-        }
+        fallback();
       }
     },
-    [selectedVoiceId]
+    [experienceMode, selectedVoiceId, stopQuestionAudio]
   );
 
   // Submit Answer
   const handleSubmitAnswer = async () => {
-    if (isSubmitting) return;
-    const textToSend = liveTranscript.trim() || "Tôi đã hoàn thành phần trả lời của mình.";
-
+    if (submitInFlightRef.current || isSubmitting || isEvaluating || isFinished) return;
+    submitInFlightRef.current = true;
+    stopQuestionAudio();
     setIsSubmitting(true);
     setAiState("THINKING");
     setIsRecording(false);
     stopMicVolumeMeter();
-
-    const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const userMsg: ChatMessage = {
-      id: Date.now(),
-      role: "user",
-      content: textToSend,
-      timestamp: nowStr,
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setLiveTranscript("");
-
+    let textToSend = transcriptRef.current.trim();
+    let userMessageId: number | null = null;
     try {
+      if (transcriptionHandleRef.current) {
+        const handle = transcriptionHandleRef.current;
+        transcriptionHandleRef.current = null;
+        await handle.stop();
+      }
+      recordingGenerationRef.current += 1;
+      textToSend = transcriptRef.current.trim();
+      if (!textToSend) {
+        setAiState("LISTENING");
+        return;
+      }
+      const nowStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      userMessageId = Date.now();
+      setMessages((prev) => [
+        ...prev,
+        { id: userMessageId!, role: "user", content: textToSend, timestamp: nowStr },
+      ]);
+      updateTranscript("");
       const res = await submitAnswerApi(sessionKey, textToSend);
       setIsSubmitting(false);
 
       if (res.finished) {
+        onInterviewFinished?.();
         setIsEvaluating(true);
         setTimeout(() => {
           setIsEvaluating(false);
@@ -571,9 +568,15 @@ export function KioskAIInterviewRoomPage({
         setAiState("IDLE");
       }
     } catch (err: unknown) {
-      setIsSubmitting(false);
       setAiState("IDLE");
+      if (userMessageId !== null) {
+        setMessages((previous) => previous.filter((message) => message.id !== userMessageId));
+      }
+      updateTranscript(textToSend);
       console.warn("Submit answer error:", err);
+    } finally {
+      submitInFlightRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -581,9 +584,11 @@ export function KioskAIInterviewRoomPage({
     let mounted = true;
     async function init() {
       if (initialStartResponse) {
-        if (initialStartResponse.questionContent) {
-          void speakQuestion(initialStartResponse.questionContent);
-        }
+        setAiState("LISTENING");
+        return;
+      }
+      if (initialSessionCache?.currentQuestionText) {
+        setAiState("LISTENING");
         return;
       }
       try {
@@ -601,23 +606,27 @@ export function KioskAIInterviewRoomPage({
             },
           ]);
           void speakQuestion(res.questionContent);
-        } else if (mounted) {
-          void speakQuestion(INITIAL_QUESTION);
         }
       } catch {
-        if (mounted) {
-          void speakQuestion(INITIAL_QUESTION);
-        }
+        if (mounted) setAiState("IDLE");
       }
     }
     void init();
     return () => {
       mounted = false;
-      ttsPlaybackRef.current?.stop();
+      recordingGenerationRef.current += 1;
+      stopQuestionAudio();
       if (transcriptionHandleRef.current) void transcriptionHandleRef.current.stop();
       stopMicVolumeMeter();
     };
-  }, [initialStartResponse, sessionKey, speakQuestion, stopMicVolumeMeter]);
+  }, [
+    initialSessionCache?.currentQuestionText,
+    initialStartResponse,
+    sessionKey,
+    speakQuestion,
+    stopMicVolumeMeter,
+    stopQuestionAudio,
+  ]);
 
   return (
     <div
@@ -763,61 +772,36 @@ export function KioskAIInterviewRoomPage({
           }}>
           {isFinished ? (
             /* Finished Stage Card */
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                backgroundColor: "rgba(5, 10, 26, 0.72)",
-                border: "1px solid rgba(0, 163, 255, 0.38)",
-                borderRadius: 20,
-                padding: "36px 32px",
-                maxWidth: 540,
-                boxShadow: "0 0 36px rgba(0, 163, 255, 0.22)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-              }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
-              <h2
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: 24,
-                  fontWeight: 900,
-                  marginBottom: 10,
-                  letterSpacing: 0.5,
-                }}>
-                Hoàn Thành Phỏng Vấn AI
-              </h2>
-              <p
-                style={{
-                  color: "#BEC7D4",
-                  fontSize: 14,
-                  lineHeight: "22px",
-                  marginBottom: 28,
-                  maxWidth: 440,
-                }}>
-                {experienceMode === "web"
-                  ? "Cảm ơn bạn đã hoàn thành bài phỏng vấn trực tuyến. Kết quả đánh giá đã được lưu an toàn vào hệ thống."
-                  : "Cảm ơn bạn đã hoàn thành bài phỏng vấn tại Kiosk. Kết quả đánh giá đã được lưu an toàn vào hệ thống."}
-              </p>
-              <button
-                type="button"
-                onClick={onFinish}
-                style={{
-                  padding: "12px 28px",
-                  borderRadius: 999,
-                  backgroundColor: "#00A3FF",
-                  color: "#FFFFFF",
-                  fontSize: 14,
-                  fontWeight: 900,
-                  border: "none",
-                  boxShadow: "0 0 20px rgba(0, 163, 255, 0.45)",
-                  cursor: "pointer",
-                }}>
-                {experienceMode === "web" ? "Trở về hồ sơ ứng tuyển" : "Trở Về Trang Chủ Kiosk →"}
-              </button>
+            <div className="w-[min(680px,calc(100%-32px))] overflow-hidden rounded-xl border border-slate-700 bg-slate-900 text-left shadow-xl shadow-black/20">
+              <div className="flex items-center justify-between gap-4 border-b border-slate-700 px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                      Interview status
+                    </p>
+                    <h2 className="mt-0.5 text-lg font-bold text-white">Hoàn thành phỏng vấn AI</h2>
+                  </div>
+                </div>
+                <span className="rounded-full border border-emerald-800 bg-emerald-950/50 px-3 py-1 text-xs font-semibold text-emerald-300">
+                  Completed
+                </span>
+              </div>
+              <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-xl text-sm leading-6 text-slate-300">
+                  {experienceMode === "web"
+                    ? "Buổi phỏng vấn trực tuyến đã hoàn tất. Kết quả đánh giá đã được lưu vào hồ sơ ứng tuyển."
+                    : "Buổi phỏng vấn tại Kiosk đã hoàn tất. Kết quả đánh giá đã được lưu vào hệ thống."}
+                </p>
+                <button
+                  type="button"
+                  onClick={onFinish}
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700">
+                  {experienceMode === "web" ? "Trở về hồ sơ ứng tuyển" : "Về trang chủ Kiosk"}
+                </button>
+              </div>
             </div>
           ) : isEvaluating ? (
             /* Evaluating Stage Card */
@@ -828,25 +812,25 @@ export function KioskAIInterviewRoomPage({
                 alignItems: "center",
                 justifyContent: "center",
                 textAlign: "center",
-                backgroundColor: "rgba(5, 10, 26, 0.72)",
-                border: "1px solid rgba(0, 163, 255, 0.38)",
-                borderRadius: 20,
+                backgroundColor: "#0F172A",
+                border: "1px solid #334155",
+                borderRadius: 12,
                 padding: "36px 32px",
                 maxWidth: 540,
-                boxShadow: "0 0 36px rgba(0, 163, 255, 0.22)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
+                boxShadow: "0 12px 32px rgba(0, 0, 0, 0.24)",
               }}>
-              <div style={{ fontSize: 52, marginBottom: 16 }}>⏳</div>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-300">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
               <h2
                 style={{
-                  color: "#00A3FF",
+                  color: "#C7D2FE",
                   fontSize: 22,
                   fontWeight: 900,
                   marginBottom: 10,
                   letterSpacing: 0.5,
                 }}>
-                Đang Đánh Giá Kết Quả...
+                Đang đánh giá kết quả
               </h2>
               <p
                 style={{
@@ -960,7 +944,9 @@ export function KioskAIInterviewRoomPage({
                       textAlign: "center",
                       margin: 0,
                     }}>
-                    {spokenQuestionText || currentQuestionContent}
+                    {spokenQuestionText ||
+                      currentQuestionContent ||
+                      "Đang tải câu hỏi phỏng vấn..."}
                   </p>
 
                   {/* Speech Bubble Triangular Tail at bottom center */}
@@ -1278,8 +1264,15 @@ export function KioskAIInterviewRoomPage({
                     {isTranscriptEditing ? (
                       <input
                         type="text"
+                        aria-label="Câu trả lời của bạn"
                         value={liveTranscript}
-                        onChange={(e) => setLiveTranscript(e.target.value)}
+                        onChange={(e) => updateTranscript(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                            e.preventDefault();
+                            void handleSubmitAnswer();
+                          }
+                        }}
                         placeholder="Nhập hoặc chỉnh sửa câu trả lời..."
                         style={{
                           width: "100%",
@@ -1331,7 +1324,7 @@ export function KioskAIInterviewRoomPage({
                     </span>
                     <button
                       type="button"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !liveTranscript.trim()}
                       onClick={handleSubmitAnswer}
                       style={{
                         display: "flex",
@@ -1343,7 +1336,7 @@ export function KioskAIInterviewRoomPage({
                         borderRadius: 6,
                         padding: "4px 12px",
                         cursor: "pointer",
-                        opacity: isSubmitting ? 0.45 : 1,
+                        opacity: isSubmitting || !liveTranscript.trim() ? 0.45 : 1,
                       }}>
                       <span
                         style={{
@@ -1380,24 +1373,27 @@ export function KioskAIInterviewRoomPage({
         {isDrawerOpen && (
           <div
             style={{
-              width: 318,
+              width: experienceMode === "web" ? "clamp(360px, 30vw, 560px)" : 318,
+              marginRight: experienceMode === "web" ? -40 : 0,
               flexShrink: 0,
               height: "100%",
               minHeight: 0,
               alignSelf: "stretch",
-              backgroundColor: "#07101F",
+              backgroundColor: "#0B1220",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              paddingTop: 8,
-              paddingBottom: 8,
+              padding: experienceMode === "web" ? "0 20px 16px" : "8px 0",
+              borderLeft: "1px solid rgba(148, 163, 184, 0.18)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
             }}>
             {/* Header */}
             <div
               style={{
-                paddingBottom: 10,
+                minHeight: experienceMode === "web" ? 56 : undefined,
+                paddingTop: experienceMode === "web" ? 12 : 0,
+                paddingBottom: experienceMode === "web" ? 12 : 10,
                 borderBottom: "1px solid rgba(152, 203, 255, 0.12)",
                 display: "flex",
                 flexDirection: "row",
@@ -1408,7 +1404,7 @@ export function KioskAIInterviewRoomPage({
                 <LineIcon name="history" size={17} />
                 <span
                   style={{ color: "#F1F5F9", fontSize: 13.5, fontWeight: 800, letterSpacing: 0.6 }}>
-                  Lịch Sử Trao Đổi
+                  Lịch sử trao đổi
                 </span>
               </div>
               <span
@@ -1432,12 +1428,18 @@ export function KioskAIInterviewRoomPage({
                 flex: 1,
                 minHeight: 0,
                 overflowY: "auto",
-                paddingTop: 10,
-                paddingBottom: 10,
+                paddingTop: experienceMode === "web" ? 16 : 10,
+                paddingBottom: experienceMode === "web" ? 16 : 10,
                 display: "flex",
                 flexDirection: "column",
                 gap: 12,
               }}>
+              {messages.length === 0 && (
+                <div className="flex min-h-48 flex-col items-center justify-center px-5 text-center text-sm leading-6 text-slate-400">
+                  <LineIcon name="history" size={22} color="#64748B" />
+                  <p className="mt-3">Cuộc trao đổi của phiên này sẽ xuất hiện tại đây.</p>
+                </div>
+              )}
               {messages.map((msg, index) => {
                 const isAi = msg.role === "ai";
                 return (
@@ -1451,11 +1453,13 @@ export function KioskAIInterviewRoomPage({
                     }}>
                     <div
                       style={{
-                        maxWidth: "94%",
-                        borderRadius: 7,
-                        padding: 10,
-                        backgroundColor: isAi ? "rgba(20, 39, 67, 0.58)" : "rgba(30, 41, 59, 0.78)",
-                        border: `1px solid ${isAi ? "rgba(0, 163, 255, 0.16)" : "rgba(255, 255, 255, 0.06)"}`,
+                        maxWidth: "92%",
+                        borderRadius: 8,
+                        padding: experienceMode === "web" ? 14 : 10,
+                        backgroundColor: isAi
+                          ? "rgba(30, 41, 59, 0.72)"
+                          : "rgba(49, 46, 129, 0.28)",
+                        border: `1px solid ${isAi ? "rgba(148, 163, 184, 0.18)" : "rgba(99, 102, 241, 0.32)"}`,
                       }}>
                       <div
                         style={{
@@ -1484,8 +1488,8 @@ export function KioskAIInterviewRoomPage({
                       <p
                         style={{
                           color: "#FFFFFF",
-                          fontSize: 11.5,
-                          lineHeight: "17px",
+                          fontSize: experienceMode === "web" ? 13 : 11.5,
+                          lineHeight: experienceMode === "web" ? "20px" : "17px",
                           marginBottom: 4,
                           margin: 0,
                         }}>
@@ -1514,7 +1518,7 @@ export function KioskAIInterviewRoomPage({
                 borderTop: "1px solid rgba(255,255,255,0.08)",
                 paddingTop: 8,
                 paddingBottom: 4,
-                display: "flex",
+                display: isSubmitting ? "flex" : "none",
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
@@ -1537,7 +1541,7 @@ export function KioskAIInterviewRoomPage({
                   letterSpacing: 1.4,
                   fontFamily: "monospace, Menlo, Consolas, sans-serif",
                 }}>
-                THANH LAN IS TYPING...
+                AI đang soạn phản hồi...
               </span>
             </div>
           </div>

@@ -3362,9 +3362,6 @@ export interface components {
             /** Format: int32 */
             totalPrice?: number;
             transactionCode?: string;
-            sessionKey?: string;
-            /** Format: int64 */
-            kioskId?: number;
         };
         QuizQuestionDto: {
             questionText: string;
@@ -5372,10 +5369,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5476,18 +5473,18 @@ export interface components {
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            deferredSyntaxAllowedAsLiteral?: string;
-            elIgnored?: string;
             isXml?: string;
-            trimDirectiveWhitespaces?: string;
-            defaultContentType?: string;
-            urlPatterns?: string[];
-            includePreludes?: string[];
-            includeCodas?: string[];
-            errorOnUndeclaredNamespace?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
             scriptingInvalid?: string;
+            includePreludes?: string[];
+            includeCodas?: string[];
+            errorOnUndeclaredNamespace?: string;
+            elIgnored?: string;
+            urlPatterns?: string[];
+            defaultContentType?: string;
+            trimDirectiveWhitespaces?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -5511,21 +5508,24 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            propagateQueryProperties?: boolean;
             redirectView?: boolean;
-            attributesCSV?: string;
+            propagateQueryProperties?: boolean;
             attributesMap?: {
                 [key: string]: unknown;
             };
             attributes?: {
                 [key: string]: string;
             };
+            attributesCSV?: string;
         };
         ServletContext: {
+            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             /** Format: int32 */
             sessionTimeout?: number;
-            sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            serverInfo?: string;
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5540,10 +5540,7 @@ export interface components {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
             jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            virtualServerName?: string;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            serverInfo?: string;
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5624,9 +5621,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
+            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
-            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
@@ -5635,8 +5632,8 @@ export interface components {
             comment?: string;
         };
         TaglibDescriptor: {
-            taglibURI?: string;
             taglibLocation?: string;
+            taglibURI?: string;
         };
         ApplicationLookupResponse: {
             /** Format: int64 */

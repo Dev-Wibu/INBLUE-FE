@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { buildKioskResumeMessages } from "./kiosk-interview-resume";
 
 describe("buildKioskResumeMessages", () => {
+  it("starts empty without a session response rather than showing another candidate's messages", () => {
+    expect(buildKioskResumeMessages(undefined, undefined)).toEqual([]);
+  });
   it("restores previous questions and answers before the current question", () => {
     const messages = buildKioskResumeMessages(
       {

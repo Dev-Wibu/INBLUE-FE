@@ -1,14 +1,7 @@
-import { PaginationControl, ReloadButton } from "@/components/shared";
+import { PaginationControl } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,7 +16,7 @@ import { $api, fetchClient } from "@/lib/api";
 import { formatUtcNaiveDateTime, toUtcNaiveTimestamp } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { AlertCircle, Bot, ChevronRight, History, Loader2, Play, Search } from "lucide-react";
+import { AlertCircle, Bot, ChevronRight, Loader2, Play, RefreshCw, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -121,6 +114,9 @@ export function AIInterviewListPage() {
         return values.some((value) => value?.toLowerCase().includes(query));
       });
   }, [data, modeLabels, searchQuery, statusFilter]);
+  const allSessions = Array.isArray(data) ? data : [];
+  const completedCount = allSessions.filter((session) => session.status === "COMPLETED").length;
+  const activeCount = allSessions.filter((session) => session.status === "IN_PROGRESS").length;
 
   const pagination = usePagination({ totalCount: sessions.length, pageSize });
   const pageData = sessions.slice(pagination.startIndex, pagination.endIndex + 1);
@@ -171,78 +167,109 @@ export function AIInterviewListPage() {
   };
 
   return (
-    <div className="w-full space-y-6 px-5 py-6 pb-16 md:px-8">
-      <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div>
+    <div className="min-h-full w-full space-y-6 bg-slate-50 px-5 py-6 pb-16 sm:px-6 md:px-8 dark:bg-slate-950">
+      <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               {t("userAiinterview.historyNavigation")}
             </h1>
-            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
               {t("userAiinterview.reviewPreviousInterviews")}
             </p>
           </div>
+          <div className="flex items-center gap-5 sm:gap-6">
+            {[
+              [allSessions.length, t("common.interviewHistory")],
+              [activeCount, statusLabels.IN_PROGRESS],
+              [completedCount, statusLabels.COMPLETED],
+            ].map(([value, label], index) => (
+              <div key={String(label)} className="flex items-center gap-5 sm:gap-6">
+                {index > 0 && <div className="h-7 w-px bg-slate-200 dark:bg-slate-800" />}
+                <div className="flex min-w-[70px] flex-col items-center text-center">
+                  <span className="text-2xl leading-none font-bold text-indigo-600 dark:text-sky-400">
+                    {value}
+                  </span>
+                  <span className="mt-1.5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                    {label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              {t("common.interviewHistory")}
-            </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              {sessions.length}
-            </span>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="relative sm:w-64">
-              <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  resetPagination();
-                }}
-                className="h-9 pl-9 text-xs"
-                placeholder={t("userAiinterview.searchByModeField")}
-              />
-            </div>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value as StatusFilter);
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            resetPagination();
+          }}
+          className="mt-6 grid grid-cols-[minmax(0,1fr)_46px] gap-3 sm:flex sm:flex-row">
+          <div className="relative col-span-2 min-w-0 sm:flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+            <Input
+              value={searchQuery}
+              onChange={(event) => {
+                setSearchQuery(event.target.value);
                 resetPagination();
-              }}>
-              <SelectTrigger className="h-9 w-full text-xs sm:w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t("common.all")}</SelectItem>
-                {Object.entries(statusLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <ReloadButton
-              onReload={async () => void (await refetch())}
-              isLoading={isRefetching}
-              tooltip={t("userAiinterview.reloadAiInterviewHistory")}
+              }}
+              className="h-[46px] rounded-xl border-slate-200 bg-slate-50/70 pl-11 text-[14.5px] dark:border-slate-800 dark:bg-slate-950/70"
+              placeholder={t("userAiinterview.searchByModeField")}
             />
           </div>
+          <Button
+            type="submit"
+            variant="outline"
+            className="h-[46px] rounded-xl border-slate-200 bg-white px-6 font-semibold dark:border-slate-800 dark:bg-slate-900">
+            <Search className="mr-2 h-[18px] w-[18px]" />
+            {t("common.search", "Tìm kiếm")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void refetch()}
+            disabled={isRefetching}
+            title={t("userAiinterview.reloadAiInterviewHistory")}
+            aria-label={t("userAiinterview.reloadAiInterviewHistory")}
+            className="h-[46px] w-[46px] rounded-xl border-slate-200 dark:border-slate-800">
+            <RefreshCw className={cn("h-4 w-4", isRefetching && "animate-spin")} />
+          </Button>
+        </form>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="mr-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+            {t("common.status", "Trạng thái")}
+          </span>
+          {(["ALL", "CREATED", "IN_PROGRESS", "COMPLETED", "CANCELLED"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setStatusFilter(value);
+                resetPagination();
+              }}
+              aria-pressed={statusFilter === value}
+              className={cn(
+                "rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors",
+                statusFilter === value
+                  ? "border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-600"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+              )}>
+              {value === "ALL" ? t("common.all") : statusLabels[value]}
+            </button>
+          ))}
         </div>
       </header>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="overflow-x-auto">
-          <Table className="min-w-[920px]">
+          <Table className="min-w-[820px]">
             <TableHeader>
               <TableRow className="border-b border-slate-200 bg-slate-50/80 hover:bg-slate-50/80 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-900">
-                <TableHead className="h-11 min-w-[210px] pl-6 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
-                  {t("common.position")}
+                <TableHead className="h-12 min-w-[190px] pl-6 text-xs font-bold text-slate-700 dark:text-slate-200">
+                  {t("common.position", "Position")}
                 </TableHead>
-                <TableHead className="h-11 min-w-[180px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+                <TableHead className="h-11 min-w-[130px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
                   {t("userAiinterview.regime")}
                 </TableHead>
                 <TableHead className="h-11 text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
@@ -254,52 +281,15 @@ export function AIInterviewListPage() {
                 <TableHead className="h-11 text-center text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
                   {t("userAiinterview.score")}
                 </TableHead>
-                <TableHead className="h-11 min-w-[145px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+                <TableHead className="h-11 min-w-[130px] text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
                   {t("userAiinterview.createdAtLabel")}
                 </TableHead>
-                <TableHead className="h-11 min-w-[125px] pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
+                <TableHead className="h-11 min-w-[105px] pr-6 text-right text-xs font-extrabold tracking-wider text-slate-800 uppercase dark:text-slate-200">
                   {t("common.actions")}
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center">
-                    <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-                      {t("common.loadingData")}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {!isLoading && isError && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center">
-                    <div className="flex flex-col items-center gap-3 text-slate-500">
-                      <AlertCircle className="h-8 w-8 text-rose-500" />
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        {t("common.unableToDownloadInterviewHistory")}
-                      </span>
-                      <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                        {t("common.tryAgain")}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-              {!isLoading && !isError && pageData.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center">
-                    <div className="flex flex-col items-center gap-2 text-slate-500">
-                      <Bot className="h-8 w-8 text-slate-400" />
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        {t("userAiinterview.thereHaveBeenNoInterviews")}
-                      </span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
               {!isLoading &&
                 !isError &&
                 pageData.map((session) => {
@@ -319,11 +309,11 @@ export function AIInterviewListPage() {
                         sessionId != null && navigate(`/user/ai-interview/result/${sessionId}`)
                       }
                       className="group cursor-pointer border-b border-slate-100 bg-white transition-colors hover:bg-slate-50/80 dark:border-slate-800/60 dark:bg-slate-900 dark:hover:bg-slate-800/80">
-                      <TableCell className="py-3 pl-6">
-                        <p className="text-xs font-extrabold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                      <TableCell className="py-4 pl-6">
+                        <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                           {getAiInterviewJobTitle(session) ?? t("common.aiInterview")}
                         </p>
-                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                           {[
                             domain,
                             session.sessionConfig?.language
@@ -335,11 +325,11 @@ export function AIInterviewListPage() {
                             .join(" · ") || "—"}
                         </p>
                       </TableCell>
-                      <TableCell className="py-3">
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      <TableCell className="py-4">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
                           {mode ? (modeLabels[mode] ?? mode) : "—"}
                         </p>
-                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                           {session.sessionConfig?.difficulty
                             ? (difficultyLabels[session.sessionConfig.difficulty] ??
                               session.sessionConfig.difficulty)
@@ -365,7 +355,7 @@ export function AIInterviewListPage() {
                       <TableCell className="text-center font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">
                         {scoreAvailable ? `${session.overallScore!.toFixed(1)}/100` : "—"}
                       </TableCell>
-                      <TableCell className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      <TableCell className="text-sm font-medium text-slate-600 dark:text-slate-300">
                         {formatUtcNaiveDateTime(session.completedAt ?? session.createdAt)}
                       </TableCell>
                       <TableCell
@@ -374,7 +364,7 @@ export function AIInterviewListPage() {
                         {resumable ? (
                           <Button
                             size="sm"
-                            className="h-8 gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-bold text-white hover:bg-indigo-700"
+                            className="h-9 gap-1.5 rounded-lg bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700"
                             disabled={resumingSessionId !== null}
                             onClick={() => void handleResume(session)}>
                             {resumingSessionId === sessionId ? (
@@ -389,7 +379,7 @@ export function AIInterviewListPage() {
                             variant="ghost"
                             size="sm"
                             disabled={sessionId == null}
-                            className="h-8 rounded-lg px-2.5 text-xs font-extrabold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60"
+                            className="h-9 rounded-lg px-2.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60"
                             onClick={() =>
                               sessionId != null &&
                               navigate(`/user/ai-interview/result/${sessionId}`)
@@ -405,6 +395,33 @@ export function AIInterviewListPage() {
             </TableBody>
           </Table>
         </div>
+        {(isLoading || isError || pageData.length === 0) && (
+          <div className="flex min-h-48 flex-col items-center justify-center gap-2 border-t border-slate-100 p-6 text-center dark:border-slate-800">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+                {t("common.loadingData")}
+              </div>
+            ) : isError ? (
+              <>
+                <AlertCircle className="h-8 w-8 text-rose-500" />
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {t("common.unableToDownloadInterviewHistory")}
+                </p>
+                <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                  {t("common.tryAgain")}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Bot className="h-8 w-8 text-slate-400" />
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  {t("userAiinterview.thereHaveBeenNoInterviews")}
+                </p>
+              </>
+            )}
+          </div>
+        )}
         {!isLoading && !isError && sessions.length > 0 && (
           <div className="flex items-center justify-end border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
             <PaginationControl
@@ -424,17 +441,22 @@ export function AIInterviewListPage() {
 
 function StatusBadge({ status, label }: { status?: string; label?: string }) {
   const styles: Record<string, string> = {
-    CREATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300",
-    IN_PROGRESS: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    COMPLETED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    CANCELLED: "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+    CREATED:
+      "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+    IN_PROGRESS:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+    COMPLETED:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+    CANCELLED:
+      "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
   };
   return (
     <Badge
       variant="outline"
       className={cn(
-        "rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase",
-        styles[status ?? ""] ?? "border-slate-200 bg-slate-100 text-slate-600"
+        "rounded-full px-3 py-1 text-xs font-semibold",
+        styles[status ?? ""] ??
+          "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
       )}>
       {label ?? status ?? "—"}
     </Badge>
@@ -443,16 +465,20 @@ function StatusBadge({ status, label }: { status?: string; label?: string }) {
 
 function ResultBadge({ result, label }: { result: string; label?: string }) {
   const styles: Record<string, string> = {
-    STRONG_HIRE: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-    HIRE: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
-    CONSIDER: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-    REJECT: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+    STRONG_HIRE:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
+    HIRE: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+    CONSIDER:
+      "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+    REJECT:
+      "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
   };
   return (
     <span
       className={cn(
-        "inline-flex rounded-md px-2 py-1 text-[10px] font-bold tracking-wide uppercase",
-        styles[result] ?? "bg-slate-100 text-slate-600"
+        "inline-flex rounded-full border px-3 py-1 text-xs font-semibold",
+        styles[result] ??
+          "border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
       )}>
       {label ?? result}
     </span>

@@ -593,8 +593,11 @@ export function CodingModule({
       if (!res.success) {
         throw new Error(t("userApplication.coding.runSampleFailed"));
       }
-      const tests = res.data?.testCases ?? [];
-      const compiled: CompilerResponse = {
+      const response = res.data as
+        | (typeof res.data & { compilerResponse?: CompilerResponse })
+        | undefined;
+      const tests = response?.compilerResponse?.testCases ?? response?.testCases ?? [];
+      const compiled: CompilerResponse = response?.compilerResponse ?? {
         status: "COMPLETED",
         passedTestCases: tests.filter((t) => t.status === "PASSED").length,
         totalTestCases: tests.length,
@@ -602,12 +605,16 @@ export function CodingModule({
         testCases: tests,
       };
       setSampleResults((prev) => ({ ...prev, [problemId]: compiled }));
-      toast.success(
-        t("userApplication.coding.testCasesPassed", {
-          passed: compiled.passedTestCases,
-          total: compiled.totalTestCases,
-        })
-      );
+      if (compiled.status === "COMPILE_ERROR" || compiled.errorMessage) {
+        toast.error(compiled.errorMessage || t("userApplication.coding.compileError"));
+      } else {
+        toast.success(
+          t("userApplication.coding.testCasesPassed", {
+            passed: compiled.passedTestCases,
+            total: compiled.totalTestCases,
+          })
+        );
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("userApplication.coding.runSampleFailed"));
     } finally {

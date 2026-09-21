@@ -46,6 +46,7 @@ interface StandaloneKioskPageProps {
   initialSessionCache?: InterviewSessionRedis;
   experienceMode?: "kiosk" | "web";
   onExit?: () => void;
+  onInterviewFinished?: () => void;
 }
 
 const C = {
@@ -300,6 +301,7 @@ export function StandaloneKioskPage({
   initialSessionCache,
   experienceMode = "kiosk",
   onExit,
+  onInterviewFinished,
 }: StandaloneKioskPageProps = {}) {
   const [windowWidth, setWindowWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1280
@@ -315,8 +317,14 @@ export function StandaloneKioskPage({
   const isTablet = windowWidth >= 768 && windowWidth < 1200;
 
   const isWebExperience = experienceMode === "web";
+  const isResumingInterview = Boolean(
+    initialSessionKey &&
+    (initialStartResponse ||
+      initialSessionCache?.currentQuestionText ||
+      (initialSessionCache?.chatHistory?.length ?? 0) > 0)
+  );
   const [screenState, setScreenState] = useState<AppScreenState>(() =>
-    initialSessionKey ? "VOICE_SELECT" : "PIN_ENTRY"
+    isResumingInterview ? "AI_ROOM" : initialSessionKey ? "VOICE_SELECT" : "PIN_ENTRY"
   );
   const [pin, setPin] = useState("");
   const [aiSessionKey, setAiSessionKey] = useState(initialSessionKey);
@@ -330,6 +338,7 @@ export function StandaloneKioskPage({
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewTtsRef = useRef<TtsPlayback | null>(null);
   const previewPlayerRef = useRef<AudioPlayerHandle | null>(null);
+  const previewRequestRef = useRef(0);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isHardwareModalOpen, setIsHardwareModalOpen] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -401,9 +410,9 @@ export function StandaloneKioskPage({
     if (!initialSessionKey) return;
     setAiSessionKey(initialSessionKey);
     setInterviewDurationMinutes(initialDurationMinutes || 15);
-    setScreenState("VOICE_SELECT");
-    void loadVoices();
-  }, [initialDurationMinutes, initialSessionKey, loadVoices]);
+    setScreenState(isResumingInterview ? "AI_ROOM" : "VOICE_SELECT");
+    if (!isResumingInterview) void loadVoices();
+  }, [initialDurationMinutes, initialSessionKey, isResumingInterview, loadVoices]);
 
   // Submit PIN Handler (Real Production Flow)
   const handlePinSubmit = useCallback(
@@ -486,31 +495,25 @@ export function StandaloneKioskPage({
     setWaveLevels([0.3, 0.55, 0.82, 0.55, 0.3]);
   }, []);
 
+  const stopVoicePreview = useCallback(() => {
+    previewRequestRef.current += 1;
+    previewTtsRef.current?.stop();
+    previewTtsRef.current = null;
+    previewPlayerRef.current?.stop();
+    previewPlayerRef.current = null;
+    setPreviewingVoiceId(null);
+    resetPreviewWave();
+  }, [resetPreviewWave]);
+
   const handlePreviewVoice = useCallback(
     async (voice: VoiceOption) => {
       setSelectedVoiceId(voice.id);
       if (previewingVoiceId === voice.id) {
-        if (previewTtsRef.current) {
-          previewTtsRef.current.stop();
-          previewTtsRef.current = null;
-        }
-        if (previewPlayerRef.current) {
-          previewPlayerRef.current.stop();
-          previewPlayerRef.current = null;
-        }
-        setPreviewingVoiceId(null);
-        resetPreviewWave();
+        stopVoicePreview();
         return;
       }
-
-      if (previewTtsRef.current) {
-        previewTtsRef.current.stop();
-        previewTtsRef.current = null;
-      }
-      if (previewPlayerRef.current) {
-        previewPlayerRef.current.stop();
-        previewPlayerRef.current = null;
-      }
+      stopVoicePreview();
+      const requestId = previewRequestRef.current;
 
       setPreviewingVoiceId(voice.id);
       resetPreviewWave();
@@ -520,6 +523,7 @@ export function StandaloneKioskPage({
         try {
           const handle = await playAudioUri(audioUrl, {
             onVolume: (volume: number) => {
+              if (requestId !== previewRequestRef.current) return;
               setWaveLevels([
                 Math.max(0.2, volume * 0.9),
                 Math.max(0.3, volume * 1.3),
@@ -529,16 +533,22 @@ export function StandaloneKioskPage({
               ]);
             },
             onEnd: () => {
+              if (requestId !== previewRequestRef.current) return;
               previewPlayerRef.current = null;
               setPreviewingVoiceId(null);
               resetPreviewWave();
             },
             onError: () => {
+              if (requestId !== previewRequestRef.current) return;
               previewPlayerRef.current = null;
               setPreviewingVoiceId(null);
               resetPreviewWave();
             },
           });
+          if (requestId !== previewRequestRef.current) {
+            handle.stop();
+            return;
+          }
           previewPlayerRef.current = handle;
           return;
         } catch {
@@ -549,8 +559,10 @@ export function StandaloneKioskPage({
       try {
         const sampleText = `Xin chào, tôi là ${voice.name.split("(")[0].trim()}, giọng đọc AI sẵn sàng đồng hành cùng bạn.`;
         const blob = await generateTtsAudioApi(sampleText, voice.id);
+        if (requestId !== previewRequestRef.current) return;
         const tts = await playTtsAudioBlob(blob, {
           onVolume: (volume: number) => {
+            if (requestId !== previewRequestRef.current) return;
             setWaveLevels([
               Math.max(0.2, volume * 0.9),
               Math.max(0.3, volume * 1.3),
@@ -560,24 +572,31 @@ export function StandaloneKioskPage({
             ]);
           },
           onEnd: () => {
+            if (requestId !== previewRequestRef.current) return;
             previewTtsRef.current = null;
             setPreviewingVoiceId(null);
             resetPreviewWave();
           },
           onError: () => {
+            if (requestId !== previewRequestRef.current) return;
             previewTtsRef.current = null;
             setPreviewingVoiceId(null);
             resetPreviewWave();
           },
         });
+        if (requestId !== previewRequestRef.current) {
+          tts.stop();
+          return;
+        }
         previewTtsRef.current = tts;
       } catch (e) {
+        if (requestId !== previewRequestRef.current) return;
         console.warn("Play voice preview failed:", e);
         setPreviewingVoiceId(null);
         resetPreviewWave();
       }
     },
-    [previewingVoiceId, resetPreviewWave]
+    [previewingVoiceId, resetPreviewWave, stopVoicePreview]
   );
 
   const handleFinishAIRoom = () => {
@@ -617,6 +636,7 @@ export function StandaloneKioskPage({
           initialSessionCache={initialSessionCache}
           experienceMode={experienceMode}
           onFinish={handleFinishAIRoom}
+          onInterviewFinished={onInterviewFinished}
         />
       </div>
     );
@@ -648,7 +668,7 @@ export function StandaloneKioskPage({
         {/* ── LEFT PANEL (Exact 1:1 Mobile Match) ── */}
         <div
           style={{
-            flex: isDesktop ? 0.44 : isTablet ? 0.36 : 1,
+            flex: isWebExperience && isWide ? 0.3 : isDesktop ? 0.44 : isTablet ? 0.36 : 1,
             minHeight: isWide ? undefined : 180,
             display: "flex",
             flexDirection: "column",
@@ -657,10 +677,10 @@ export function StandaloneKioskPage({
             position: "relative",
             overflow: "hidden",
           }}>
-          <CyberCanvasBackground />
+          {!isWebExperience && <CyberCanvasBackground />}
 
           {/* Real-time Date Widget at Top Right of Left Panel */}
-          {isWide && (
+          {isWide && !isWebExperience && (
             <div
               style={{
                 position: "absolute",
@@ -686,9 +706,9 @@ export function StandaloneKioskPage({
             <div
               style={{
                 color: C.primary,
-                fontSize: isDesktop ? 76 : isTablet ? 48 : 36,
+                fontSize: isWebExperience ? 32 : isDesktop ? 76 : isTablet ? 48 : 36,
                 fontWeight: 900,
-                letterSpacing: -1.5,
+                letterSpacing: 0,
                 marginBottom: isTablet ? 8 : 12,
               }}>
               INBLUE
@@ -696,7 +716,7 @@ export function StandaloneKioskPage({
             <div
               style={{
                 color: C.onSurface,
-                fontSize: isDesktop ? 44 : isTablet ? 30 : 24,
+                fontSize: isWebExperience ? 26 : isDesktop ? 44 : isTablet ? 30 : 24,
                 fontWeight: 800,
                 lineHeight: isDesktop ? "52px" : isTablet ? "38px" : "30px",
                 marginBottom: isTablet ? 14 : 20,
@@ -745,7 +765,7 @@ export function StandaloneKioskPage({
         {/* ── RIGHT PANEL (Exact 1:1 Mobile Match) ── */}
         <div
           style={{
-            flex: isDesktop ? 0.56 : isTablet ? 0.64 : 1,
+            flex: isWebExperience && isWide ? 0.7 : isDesktop ? 0.56 : isTablet ? 0.64 : 1,
             backgroundColor: C.bg,
             borderLeft: isWide ? `1px solid ${C.white10}` : "none",
             borderTop: isWide ? "none" : `1px solid ${C.white10}`,
@@ -755,16 +775,18 @@ export function StandaloneKioskPage({
             flexDirection: "column",
           }}>
           {/* Subtle Grid Decoration */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              opacity: 0.5,
-              backgroundImage: `linear-gradient(${C.white03} 1px, transparent 1px), linear-gradient(90deg, ${C.white03} 1px, transparent 1px)`,
-              backgroundSize: "40px 40px",
-            }}
-          />
+          {!isWebExperience && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                opacity: 0.5,
+                backgroundImage: `linear-gradient(${C.white03} 1px, transparent 1px), linear-gradient(90deg, ${C.white03} 1px, transparent 1px)`,
+                backgroundSize: "40px 40px",
+              }}
+            />
+          )}
 
           {/* Top Control Row (Exact 1:1 Mobile Match - Clock & Settings Gear Button) */}
           {screenState !== "VOICE_SELECT" && (
@@ -1111,7 +1133,10 @@ export function StandaloneKioskPage({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsHardwareModalOpen(true)}
+                    onClick={() => {
+                      stopVoicePreview();
+                      setIsHardwareModalOpen(true);
+                    }}
                     disabled={!selectedVoiceId || isLoadingVoices}
                     style={{
                       flex: 1,
@@ -1522,6 +1547,7 @@ export function StandaloneKioskPage({
       <KioskHardwareCheckModal
         isOpen={isHardwareModalOpen}
         onConfirm={() => {
+          stopVoicePreview();
           setIsHardwareModalOpen(false);
           setScreenState("AI_ROOM");
         }}

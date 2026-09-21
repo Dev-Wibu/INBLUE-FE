@@ -332,10 +332,8 @@ function AiInterviewSubheader({
   sessionResult,
   showInterviewChoices,
   showResumeAction,
-  isResuming,
   onChooseKiosk,
   onStartWebInterview,
-  onResumeInterview,
 }: {
   round: JdRound;
   aiScore?: number | null;
@@ -347,10 +345,8 @@ function AiInterviewSubheader({
   sessionResult?: string | null;
   showInterviewChoices?: boolean;
   showResumeAction?: boolean;
-  isResuming?: boolean;
   onChooseKiosk?: () => void;
   onStartWebInterview?: () => void;
-  onResumeInterview?: () => void;
 }) {
   const { t } = useTranslation();
   const roundOrder = round.roundOrder ?? 7;
@@ -423,21 +419,6 @@ function AiInterviewSubheader({
               <span>{t("userApplication.aiInterview.resultCompleted", "KẾT QUẢ: HOÀN THÀNH")}</span>
             </span>
           )}
-
-        {showResumeAction && !effectiveResult && (
-          <Button
-            type="button"
-            onClick={onResumeInterview}
-            disabled={isResuming}
-            className="h-9 justify-center gap-2 bg-indigo-600 px-3 text-xs font-extrabold text-white hover:bg-indigo-700 focus-visible:ring-indigo-500">
-            {isResuming ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Play className="h-3.5 w-3.5" />
-            )}
-            {t("userAiinterview.continueInterview")}
-          </Button>
-        )}
 
         {showInterviewChoices && !showResumeAction && !effectiveResult && (
           <div
@@ -1045,7 +1026,7 @@ interface QuestionCluster {
   avgScore: number;
 }
 
-function AiInterviewQuestionsTab({
+export function AiInterviewQuestionsTab({
   questions = [],
 }: {
   questions?: components["schemas"]["QAResult"][];
@@ -1623,14 +1604,7 @@ function AiInterviewResultView({
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const rawDetail = detail as any;
   const directSessionId =
-    detail?.aiInterviewSessionId ??
-    detail?.sessionId ??
-    rawDetail?.sessionInfo?.sessionId ??
-    rawDetail?.sessionInfo?.id ??
-    rawDetail?.submissionData?.aiInterviewSessionId ??
-    rawDetail?.submissionData?.sessionId ??
-    rawDetail?.submissionData?.id ??
-    0;
+    detail?.aiInterviewSessionId ?? rawDetail?.submissionData?.aiInterviewSessionId ?? 0;
 
   const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
   const { data: userSessionsRaw } = useInterviewSessionsByUser(
@@ -1646,13 +1620,26 @@ function AiInterviewResultView({
         ? (userSessionsRaw as any).data
         : [];
     if (userSessions.length === 0) return null;
-    return (
-      userSessions.find(
-        (s: any) =>
-          s.applicationDetailId === detail?.id ||
-          (detail?.applicationId && s.candidateProfile?.applicationId === detail.applicationId)
-      ) ?? null
+    const matchingSessions = userSessions.filter(
+      (session: any) =>
+        session.applicationDetailId === detail?.id ||
+        (detail?.applicationId && session.candidateProfile?.applicationId === detail.applicationId)
     );
+    matchingSessions.sort((first: any, second: any) => {
+      const firstFinished = Boolean(
+        first.sessionKey &&
+        localStorage.getItem(`interview-finished-${first.sessionKey}`) === "true"
+      );
+      const secondFinished = Boolean(
+        second.sessionKey &&
+        localStorage.getItem(`interview-finished-${second.sessionKey}`) === "true"
+      );
+      const firstResumable = isAiInterviewResumable(first, firstFinished) ? 1 : 0;
+      const secondResumable = isAiInterviewResumable(second, secondFinished) ? 1 : 0;
+      if (firstResumable !== secondResumable) return secondResumable - firstResumable;
+      return (second.id ?? 0) - (first.id ?? 0);
+    });
+    return matchingSessions[0] ?? null;
   }, [directSessionId, userSessionsRaw, detail]);
 
   const effectiveSessionId =
@@ -2675,14 +2662,7 @@ export function AiInterviewModule({
 
   const rawDetail = detail as any;
   const directSessionId =
-    detail?.aiInterviewSessionId ??
-    detail?.sessionId ??
-    rawDetail?.sessionInfo?.sessionId ??
-    rawDetail?.sessionInfo?.id ??
-    rawDetail?.submissionData?.aiInterviewSessionId ??
-    rawDetail?.submissionData?.sessionId ??
-    rawDetail?.submissionData?.id ??
-    0;
+    detail?.aiInterviewSessionId ?? rawDetail?.submissionData?.aiInterviewSessionId ?? 0;
 
   const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
   const { data: userSessionsRaw } = useInterviewSessionsByUser(
@@ -2698,13 +2678,26 @@ export function AiInterviewModule({
         ? (userSessionsRaw as any).data
         : [];
     if (userSessions.length === 0) return null;
-    return (
-      userSessions.find(
-        (s: any) =>
-          s.applicationDetailId === detail?.id ||
-          (detail?.applicationId && s.candidateProfile?.applicationId === detail.applicationId)
-      ) ?? null
+    const matchingSessions = userSessions.filter(
+      (session: any) =>
+        session.applicationDetailId === detail?.id ||
+        (detail?.applicationId && session.candidateProfile?.applicationId === detail.applicationId)
     );
+    matchingSessions.sort((first: any, second: any) => {
+      const firstFinished = Boolean(
+        first.sessionKey &&
+        localStorage.getItem(`interview-finished-${first.sessionKey}`) === "true"
+      );
+      const secondFinished = Boolean(
+        second.sessionKey &&
+        localStorage.getItem(`interview-finished-${second.sessionKey}`) === "true"
+      );
+      const firstResumable = isAiInterviewResumable(first, firstFinished) ? 1 : 0;
+      const secondResumable = isAiInterviewResumable(second, secondFinished) ? 1 : 0;
+      if (firstResumable !== secondResumable) return secondResumable - firstResumable;
+      return (second.id ?? 0) - (first.id ?? 0);
+    });
+    return matchingSessions[0] ?? null;
   }, [directSessionId, userSessionsRaw, detail]);
 
   const effectiveSessionId =
@@ -2716,23 +2709,59 @@ export function AiInterviewModule({
   );
 
   const sessionData = fetchedSessionData ?? matchedSessionFromUser;
+  const persistedSession = useMemo(() => {
+    if (!detail?.id || typeof window === "undefined") return null;
+    try {
+      const raw =
+        localStorage.getItem(`application-ai-interview:${detail.id}`) ??
+        localStorage.getItem(`application-ai-interview-app:${applicationId}`);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        sessionKey?: string;
+        applicationId?: number;
+        applicationDetailId?: number;
+        durationMinutes?: number;
+      };
+      if (!parsed.sessionKey?.trim()) return null;
+      return {
+        status: "IN_PROGRESS" as const,
+        sessionKey: parsed.sessionKey,
+        applicationDetailId: parsed.applicationDetailId ?? detail.id,
+        candidateProfile: { applicationId: parsed.applicationId ?? applicationId },
+        sessionConfig: { duration_minutes: parsed.durationMinutes ?? 30 },
+      };
+    } catch {
+      return null;
+    }
+  }, [applicationId, detail?.id]);
+  const activeSessionData =
+    sessionData &&
+    isAiInterviewResumable(
+      sessionData,
+      Boolean(
+        sessionData.sessionKey &&
+        localStorage.getItem(`interview-finished-${sessionData.sessionKey}`) === "true"
+      )
+    )
+      ? sessionData
+      : persistedSession;
   const sessionResult = sessionData?.result ?? detail?.finalResult ?? null;
   const submittedFinalAnswer = Boolean(
-    sessionData?.sessionKey &&
-    localStorage.getItem(`interview-finished-${sessionData.sessionKey}`) === "true"
+    activeSessionData?.sessionKey &&
+    localStorage.getItem(`interview-finished-${activeSessionData.sessionKey}`) === "true"
   );
   const sessionBelongsToDetail = Boolean(
-    sessionData &&
+    activeSessionData &&
     (!detail?.id ||
-      !sessionData.applicationDetailId ||
-      sessionData.applicationDetailId === detail.id)
+      !activeSessionData.applicationDetailId ||
+      activeSessionData.applicationDetailId === detail.id)
   );
   const resumableSession =
     !isCompletedEffective &&
-    sessionData != null &&
+    activeSessionData != null &&
     sessionBelongsToDetail &&
-    isAiInterviewResumable(sessionData, submittedFinalAnswer)
-      ? sessionData
+    isAiInterviewResumable(activeSessionData, submittedFinalAnswer)
+      ? activeSessionData
       : null;
 
   const handleChooseKiosk = () => {
@@ -2792,10 +2821,8 @@ export function AiInterviewModule({
           isCurrent && !isStaffView && !isCompletedEffective && !resumableSession
         }
         showResumeAction={isCurrent && !isStaffView && Boolean(resumableSession)}
-        isResuming={isResuming}
         onChooseKiosk={handleChooseKiosk}
         onStartWebInterview={handleStartWebInterview}
-        onResumeInterview={() => void handleResumeInterview()}
       />
 
       {isCompletedEffective ? (
@@ -2808,17 +2835,22 @@ export function AiInterviewModule({
       ) : isStaffInProgress ? (
         <StaffAiInterviewWaitingView detail={detail} round={round} />
       ) : resumableSession ? (
-        <Card className="border-indigo-200 bg-indigo-50/60 p-5 shadow-xs dark:border-indigo-500/30 dark:bg-indigo-950/20">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
                 <Play className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-950 dark:text-white">
-                  {t("userApplication.aiInterview.resumeInProgressTitle")}
-                </h3>
-                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-950 dark:text-white">
+                    {t("userApplication.aiInterview.resumeInProgressTitle")}
+                  </h3>
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    {t("common.ongoing", "Đang diễn ra")}
+                  </span>
+                </div>
+                <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {t("userApplication.aiInterview.resumeInProgressDescription")}
                 </p>
               </div>
@@ -2827,7 +2859,7 @@ export function AiInterviewModule({
               type="button"
               onClick={() => void handleResumeInterview()}
               disabled={isResuming}
-              className="h-10 shrink-0 gap-2 bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-700">
+              className="h-10 shrink-0 gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700">
               {isResuming ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -2836,7 +2868,7 @@ export function AiInterviewModule({
               {t("userAiinterview.continueInterview")}
             </Button>
           </div>
-        </Card>
+        </div>
       ) : (
         <div
           id="ai-interview-kiosk-booking"
