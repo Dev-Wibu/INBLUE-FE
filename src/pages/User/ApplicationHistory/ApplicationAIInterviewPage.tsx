@@ -5,7 +5,15 @@ import { useCurrentRound } from "@/hooks/useRound";
 import { $api, fetchClient } from "@/lib/api";
 import type { InterviewStartResponse } from "@/services/kiosk/kioskApi.service";
 import { useAuthStore } from "@/stores/authStore";
-import { AlertCircle, ArrowLeft, Bot, Clock } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Bot,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -165,6 +173,24 @@ export function ApplicationAIInterviewPage() {
     user,
   ]);
 
+  useEffect(() => {
+    if (!sessionKey || !applicationDetailId) return;
+    const serializedSession = JSON.stringify({
+      sessionKey,
+      applicationId,
+      applicationDetailId,
+      durationMinutes: resumeState?.resumeDurationMinutes ?? roundConfig?.timeLimitMinutes ?? 30,
+    });
+    localStorage.setItem(`application-ai-interview:${applicationDetailId}`, serializedSession);
+    localStorage.setItem(`application-ai-interview-app:${applicationId}`, serializedSession);
+  }, [
+    applicationDetailId,
+    applicationId,
+    resumeState?.resumeDurationMinutes,
+    roundConfig?.timeLimitMinutes,
+    sessionKey,
+  ]);
+
   const handleBack = useCallback(() => {
     navigate(`/user/application/${applicationId}`);
   }, [applicationId, navigate]);
@@ -201,6 +227,10 @@ export function ApplicationAIInterviewPage() {
           initialSessionCache={resumeCache}
           experienceMode="web"
           onExit={handleBack}
+          onInterviewFinished={() => {
+            localStorage.removeItem(`application-ai-interview:${applicationDetailId}`);
+            localStorage.removeItem(`application-ai-interview-app:${applicationId}`);
+          }}
         />
       </Suspense>
     );
@@ -232,64 +262,85 @@ export function ApplicationAIInterviewPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-slate-50 px-4 dark:bg-slate-950">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-          className="shrink-0"
-          disabled={isCreatingSession}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0047AB] shadow-lg">
-            <Bot className="h-7 w-7 text-white" />
+    <div className="min-h-screen bg-slate-50 px-5 py-6 sm:px-6 md:px-8 dark:bg-slate-950">
+      <header className="mx-auto max-w-5xl rounded-[20px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+          <div className="flex min-w-0 items-start gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleBack}
+              disabled={isCreatingSession}
+              title={t("general.back")}
+              aria-label={t("general.back")}
+              className="h-10 w-10 shrink-0 rounded-xl border-slate-200 dark:border-slate-700">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+              <Bot className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {t("userApplicationhistory.aiInterviewRound")}
+              </h1>
+              <p className="mt-1 text-[15px] text-slate-500 dark:text-slate-400">
+                {roundConfig?.instruction ?? "AI Interview"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              {t("userApplicationhistory.aiInterviewRound")}
-            </h1>
-            <p className="text-sm text-slate-500">{roundConfig?.instruction ?? "AI Interview"}</p>
-          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Đang chuẩn bị
+          </span>
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-col items-center gap-4">
-        {isLoading ? (
-          <>
-            <Spinner size="lg" tone="primary" />
-            <p className="text-sm text-slate-500">
-              {roundLoading
-                ? t("userAiinterview.preparingYourInterview")
-                : t("userApplicationhistory.redirectingToInterview")}
-            </p>
-          </>
-        ) : (
-          <>
-            <Clock className="h-12 w-12 animate-pulse text-[#0047AB]" />
-            <p className="text-sm text-slate-500">
-              {t("userApplicationhistory.redirectingToInterview")}
-            </p>
-          </>
-        )}
-      </div>
-
-      {roundConfig && (
-        <div className="w-full max-w-md space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          {roundConfig.instruction && (
-            <p className="text-xs text-slate-600 dark:text-slate-400">{roundConfig.instruction}</p>
-          )}
-          {roundConfig.timeLimitMinutes && (
-            <div className="flex items-center gap-1.5 pt-2">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-              <span className="text-xs font-medium text-slate-500">
-                {roundConfig.timeLimitMinutes} {t("common.minute")}
+      <main className="mx-auto mt-6 grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.75fr)]">
+        <section className="flex min-h-72 flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-8 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <Loader2 className="h-7 w-7 animate-spin" />
+          </div>
+          <h2 className="mt-5 text-lg font-bold text-slate-900 dark:text-white">
+            {roundLoading
+              ? t("userAiinterview.preparingYourInterview")
+              : t("userApplicationhistory.redirectingToInterview")}
+          </h2>
+          <p className="mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">
+            Hệ thống đang tạo phiên riêng và tải cấu hình giọng nói. Trang chọn giọng sẽ mở ngay khi
+            hoàn tất.
+          </p>
+        </section>
+        <aside className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            Thông tin vòng phỏng vấn
+          </h2>
+          <div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="flex items-center justify-between gap-4 py-3">
+              <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <Clock className="h-4 w-4" />
+                Thời lượng
+              </span>
+              <span className="text-sm font-semibold">
+                {roundConfig?.timeLimitMinutes ?? 30} {t("common.minute")}
               </span>
             </div>
-          )}
-        </div>
-      )}
+            <div className="flex items-center justify-between gap-4 py-3">
+              <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <ShieldCheck className="h-4 w-4" />
+                Phiên riêng tư
+              </span>
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            </div>
+            <div className="flex items-center justify-between gap-4 py-3">
+              <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <Bot className="h-4 w-4" />
+                Hình thức
+              </span>
+              <span className="text-sm font-semibold">Voice và văn bản</span>
+            </div>
+          </div>
+        </aside>
+      </main>
     </div>
   );
 }

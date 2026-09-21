@@ -79,6 +79,7 @@ import { ApplicationAIInterviewPage } from "./ApplicationAIInterviewPage";
 describe("ApplicationAIInterviewPage web flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     mocks.createSession.mockResolvedValue({
       data: "123e4567-e89b-12d3-a456-426614174000",
       error: undefined,
@@ -126,6 +127,13 @@ describe("ApplicationAIInterviewPage web flow", () => {
     );
     expect(voiceSelector).toHaveAttribute("data-duration", "25");
     expect(voiceSelector).toHaveAttribute("data-experience-mode", "web");
+    expect(JSON.parse(localStorage.getItem("application-ai-interview:42") ?? "null")).toEqual(
+      expect.objectContaining({
+        sessionKey: "123e4567-e89b-12d3-a456-426614174000",
+        applicationId: 12,
+        applicationDetailId: 42,
+      })
+    );
   });
 
   it("resumes the existing session in the application interview UI without creating another one", async () => {
@@ -163,5 +171,11 @@ describe("ApplicationAIInterviewPage web flow", () => {
     expect(voiceSelector).toHaveAttribute("data-question", "Câu hỏi đang trả lời");
     expect(voiceSelector).toHaveAttribute("data-history-count", "1");
     expect(mocks.createSession).not.toHaveBeenCalled();
+    expect(JSON.parse(localStorage.getItem("application-ai-interview-app:210") ?? "null")).toEqual(
+      expect.objectContaining({
+        sessionKey: "existing-session-key",
+        applicationDetailId: 527,
+      })
+    );
   });
 });
