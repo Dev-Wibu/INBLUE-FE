@@ -15,6 +15,7 @@ import {
   normalizeAiInterviewScore,
   normalizeAiInterviewSessionScore,
 } from "@/lib/ai-interview-score";
+import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { isFutureKioskSlot } from "@/lib/kiosk-slot";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ import {
   MessageSquare,
   Mic,
   Minimize2,
+  Play,
   RadioTower,
   RefreshCw,
   Search,
@@ -68,6 +70,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { components } from "../../../../../../schema-from-be";
+import {
+  buildApplicationAiInterviewResumePath,
+  isAiInterviewResumable,
+} from "../../../AIInterview/ai-interview-history.utils";
 import type { JdRound } from "../HorizontalPipeline";
 import type { JdInfoPayload } from "../RoundWorkspaceDispatcher";
 import { localizeRoundInstruction } from "./round-localization";
@@ -325,8 +331,11 @@ function AiInterviewSubheader({
   finalResult,
   sessionResult,
   showInterviewChoices,
+  showResumeAction,
+  isResuming,
   onChooseKiosk,
   onStartWebInterview,
+  onResumeInterview,
 }: {
   round: JdRound;
   aiScore?: number | null;
@@ -337,8 +346,11 @@ function AiInterviewSubheader({
   finalResult?: string | null;
   sessionResult?: string | null;
   showInterviewChoices?: boolean;
+  showResumeAction?: boolean;
+  isResuming?: boolean;
   onChooseKiosk?: () => void;
   onStartWebInterview?: () => void;
+  onResumeInterview?: () => void;
 }) {
   const { t } = useTranslation();
   const roundOrder = round.roundOrder ?? 7;
@@ -412,7 +424,22 @@ function AiInterviewSubheader({
             </span>
           )}
 
-        {showInterviewChoices && !effectiveResult && (
+        {showResumeAction && !effectiveResult && (
+          <Button
+            type="button"
+            onClick={onResumeInterview}
+            disabled={isResuming}
+            className="h-9 justify-center gap-2 bg-indigo-600 px-3 text-xs font-extrabold text-white hover:bg-indigo-700 focus-visible:ring-indigo-500">
+            {isResuming ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Play className="h-3.5 w-3.5" />
+            )}
+            {t("userAiinterview.continueInterview")}
+          </Button>
+        )}
+
+        {showInterviewChoices && !showResumeAction && !effectiveResult && (
           <div
             className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row"
             role="group"
@@ -2468,6 +2495,7 @@ export function AiInterviewModule({
   const [selectedSlot, setSelectedSlot] = useState<SlotCalendarSlot | null>(null);
   const [createdBooking, setCreatedBooking] = useState<KioskBooking | null>(null);
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
 
   const statusStr = detail?.status as string | undefined;
   const isCompletedEffective =
@@ -2689,6 +2717,23 @@ export function AiInterviewModule({
 
   const sessionData = fetchedSessionData ?? matchedSessionFromUser;
   const sessionResult = sessionData?.result ?? detail?.finalResult ?? null;
+  const submittedFinalAnswer = Boolean(
+    sessionData?.sessionKey &&
+    localStorage.getItem(`interview-finished-${sessionData.sessionKey}`) === "true"
+  );
+  const sessionBelongsToDetail = Boolean(
+    sessionData &&
+    (!detail?.id ||
+      !sessionData.applicationDetailId ||
+      sessionData.applicationDetailId === detail.id)
+  );
+  const resumableSession =
+    !isCompletedEffective &&
+    sessionData != null &&
+    sessionBelongsToDetail &&
+    isAiInterviewResumable(sessionData, submittedFinalAnswer)
+      ? sessionData
+      : null;
 
   const handleChooseKiosk = () => {
     const target = document.getElementById("ai-interview-kiosk-booking");
@@ -2702,6 +2747,36 @@ export function AiInterviewModule({
     navigate(`/user/application/${applicationId}/ai-interview${query}`);
   };
 
+  const handleResumeInterview = async () => {
+    if (isResuming || !resumableSession) return;
+    const sessionKey = resumableSession.sessionKey?.trim();
+    const detailId = resumableSession.applicationDetailId ?? detail?.id;
+    if (!sessionKey || !detailId) {
+      toast.error(t("userAiinterview.resumeMissingApplication"));
+      return;
+    }
+
+    setIsResuming(true);
+    try {
+      const { data: resumedQuestion, error } = await fetchClient.GET(
+        "/api/v1/interview/start/{sessionKey}",
+        { params: { path: { sessionKey } } }
+      );
+      if (error || !resumedQuestion) throw error ?? new Error("Unable to resume interview");
+
+      navigate(buildApplicationAiInterviewResumePath(applicationId, detailId, sessionKey), {
+        state: {
+          resumedQuestion,
+          resumeDurationMinutes: resumableSession.sessionConfig?.duration_minutes ?? 30,
+        },
+      });
+    } catch {
+      toast.error(t("userAiinterview.resumeFailedRefresh"));
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <AiInterviewSubheader
@@ -2713,9 +2788,14 @@ export function AiInterviewModule({
         status={detail?.status}
         finalResult={detail?.finalResult}
         sessionResult={sessionResult}
-        showInterviewChoices={isCurrent && !isStaffView && !isCompletedEffective}
+        showInterviewChoices={
+          isCurrent && !isStaffView && !isCompletedEffective && !resumableSession
+        }
+        showResumeAction={isCurrent && !isStaffView && Boolean(resumableSession)}
+        isResuming={isResuming}
         onChooseKiosk={handleChooseKiosk}
         onStartWebInterview={handleStartWebInterview}
+        onResumeInterview={() => void handleResumeInterview()}
       />
 
       {isCompletedEffective ? (
@@ -2727,6 +2807,36 @@ export function AiInterviewModule({
         />
       ) : isStaffInProgress ? (
         <StaffAiInterviewWaitingView detail={detail} round={round} />
+      ) : resumableSession ? (
+        <Card className="border-indigo-200 bg-indigo-50/60 p-5 shadow-xs dark:border-indigo-500/30 dark:bg-indigo-950/20">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
+                <Play className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-950 dark:text-white">
+                  {t("userApplication.aiInterview.resumeInProgressTitle")}
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  {t("userApplication.aiInterview.resumeInProgressDescription")}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              onClick={() => void handleResumeInterview()}
+              disabled={isResuming}
+              className="h-10 shrink-0 gap-2 bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-700">
+              {isResuming ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {t("userAiinterview.continueInterview")}
+            </Button>
+          </div>
+        </Card>
       ) : (
         <div
           id="ai-interview-kiosk-booking"

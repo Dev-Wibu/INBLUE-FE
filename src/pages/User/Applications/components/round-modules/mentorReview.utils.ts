@@ -57,7 +57,7 @@ export function canCancelMentorSchedule(params: {
   return (
     detailStatus === "PENDING" &&
     Boolean(sessionId) &&
-    meetingType === "ONLINE" &&
+    (meetingType === "ONLINE" || meetingType === "OFFLINE") &&
     ["DRAFT", "SCHEDULED", "PAID"].includes(sessionStatus ?? "")
   );
 }

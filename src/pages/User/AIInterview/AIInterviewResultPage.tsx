@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { $api } from "@/lib/api";
+import { $api, fetchClient } from "@/lib/api";
 import { formatUtcNaiveDateTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import {
@@ -15,18 +15,23 @@ import {
   FileQuestion,
   Globe,
   Lightbulb,
+  Loader2,
   MessageSquare,
+  Play,
   RefreshCw,
   ShieldAlert,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import {
+  buildApplicationAiInterviewResumePath,
   getAiInterviewDomain,
   getAiInterviewJobTitle,
   getAiInterviewMode,
   hasAiInterviewScore,
+  isAiInterviewResumable,
 } from "./ai-interview-history.utils";
 
 export function AIInterviewResultPage() {
@@ -34,6 +39,7 @@ export function AIInterviewResultPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const sessionId = Number(id);
+  const [isResuming, setIsResuming] = useState(false);
 
   const statusLabels = useMemo<Record<string, string>>(
     () => ({
@@ -118,12 +124,63 @@ export function AIInterviewResultPage() {
   const history = session.resultDetail?.history ?? [];
   const hasScore = hasAiInterviewScore(session);
   const shouldRefresh = session.status === "IN_PROGRESS" || !session.resultDetail;
+  const submittedFinalAnswer = Boolean(
+    session.sessionKey &&
+    localStorage.getItem(`interview-finished-${session.sessionKey}`) === "true"
+  );
+  const isResumable = isAiInterviewResumable(session, submittedFinalAnswer);
+
+  const handleResume = async () => {
+    if (isResuming || !isResumable) return;
+    const sessionKey = session.sessionKey?.trim();
+    const applicationDetailId = session.applicationDetailId;
+    if (!sessionKey || !applicationDetailId) {
+      toast.error(t("userAiinterview.resumeMissingApplication"));
+      return;
+    }
+
+    setIsResuming(true);
+    try {
+      let applicationId = Number(session.candidateProfile?.applicationId) || 0;
+      if (!applicationId) {
+        const { data: detail, error: detailError } = await fetchClient.GET(
+          "/api/application-details/{id}",
+          { params: { path: { id: applicationDetailId } } }
+        );
+        if (detailError || !detail?.applicationId) {
+          throw detailError ?? new Error("Application detail is unavailable");
+        }
+        applicationId = detail.applicationId;
+      }
+
+      const { data: resumedQuestion, error } = await fetchClient.GET(
+        "/api/v1/interview/start/{sessionKey}",
+        { params: { path: { sessionKey } } }
+      );
+      if (error || !resumedQuestion) throw error ?? new Error("Unable to resume interview");
+
+      navigate(
+        buildApplicationAiInterviewResumePath(applicationId, applicationDetailId, sessionKey),
+        {
+          state: {
+            resumedQuestion,
+            resumeDurationMinutes: session.sessionConfig?.duration_minutes ?? 30,
+          },
+        }
+      );
+    } catch {
+      await refetch();
+      toast.error(t("userAiinterview.resumeFailedRefresh"));
+    } finally {
+      setIsResuming(false);
+    }
+  };
 
   return (
     <div className="w-full px-5 py-6 pb-16 md:px-8">
       <div className="w-full space-y-5">
         <header className="rounded-[20px] border border-slate-200 bg-white p-5 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => navigate("/user?tab=aiInterview")}
@@ -131,17 +188,33 @@ export function AIInterviewResultPage() {
               <ArrowLeft className="h-3.5 w-3.5" />
               {t("common.backToTheList", "Quay lại danh sách")}
             </button>
-            {shouldRefresh && session.status !== "CANCELLED" && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isRefetching}
-                onClick={() => void refetch()}
-                className="h-8 gap-2 rounded-lg text-xs font-bold">
-                <RefreshCw className={cn("h-3.5 w-3.5", isRefetching && "animate-spin")} />
-                {t("common.reload", "Tải lại")}
-              </Button>
-            )}
+            <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+              {shouldRefresh && session.status !== "CANCELLED" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isRefetching || isResuming}
+                  onClick={() => void refetch()}
+                  className="h-8 gap-2 rounded-lg text-xs font-bold">
+                  <RefreshCw className={cn("h-3.5 w-3.5", isRefetching && "animate-spin")} />
+                  {t("common.reload", "Tải lại")}
+                </Button>
+              )}
+              {isResumable && (
+                <Button
+                  size="sm"
+                  disabled={isResuming}
+                  onClick={() => void handleResume()}
+                  className="h-8 gap-2 bg-indigo-600 px-3 text-xs font-bold text-white hover:bg-indigo-700">
+                  {isResuming ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                  {t("userAiinterview.continueInterview")}
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="mt-4 flex flex-col gap-5 border-t border-slate-100 pt-5 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800">
@@ -210,10 +283,12 @@ export function AIInterviewResultPage() {
 
         {session.status === "IN_PROGRESS" && (
           <Notice tone="amber" icon={Clock}>
-            {t(
-              "userAiinterview.gradingDescription",
-              "Phiên phỏng vấn đang tiếp tục hoặc hệ thống đang xử lý kết quả."
-            )}
+            {isResumable
+              ? t("userAiinterview.resumeDetailDescription")
+              : t(
+                  "userAiinterview.gradingDescription",
+                  "Phiên phỏng vấn đang tiếp tục hoặc hệ thống đang xử lý kết quả."
+                )}
           </Notice>
         )}
         {session.status === "CANCELLED" && (

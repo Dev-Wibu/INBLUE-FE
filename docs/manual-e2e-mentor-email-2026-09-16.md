@@ -240,7 +240,7 @@ Sau request đầu tiên, detail chưa được phép tự coi là hoàn tất. 
 
 ## 4. Test luồng OFFLINE
 
-Tạo một detail khác ở trạng thái `PENDING`, đã có mentor:
+Tạo một detail khác ở trạng thái `PENDING`, đã có mentor. Candidate chọn **Tại chỗ** và gửi đề xuất:
 
 ```json
 {
@@ -251,7 +251,25 @@ Tạo một detail khác ở trạng thái `PENDING`, đã có mentor:
 }
 ```
 
-Kỳ vọng tạo session thật ngay, `sessionInfo.meetingType = "OFFLINE"`, session `COMPLETED`; không xuất hiện trong hàng chờ duyệt lịch. Không bấm submit hai lần vì backend hiện chưa chặn tạo OFFLINE trùng.
+Kỳ vọng trước khi mentor xử lý:
+
+- Detail chuyển sang `AWAITING_MENTOR_SCHEDULE_APPROVAL` giống ONLINE.
+- Chưa có session ID dương.
+- `sessionInfo.meetingType = "OFFLINE"`, `pendingJoinTime` và `pendingDurationMinutes` đúng dữ liệu vừa gửi.
+- Candidate thấy bước **Chờ mentor duyệt lịch**, có thể đổi đề xuất hoặc hủy lịch.
+- Hàng chờ của đúng mentor hiển thị badge **Phỏng vấn trực tiếp** cùng nút **Duyệt lịch** và **Từ chối**.
+
+Mentor duyệt bằng cùng endpoint ở bước D1:
+
+```json
+{ "approved": true }
+```
+
+Kỳ vọng detail có session ID dương và session không có phòng video. Candidate thấy hướng dẫn đến địa điểm đã thống nhất, không thấy nút **Vào phòng Video Call**. Trước khi buổi phỏng vấn bắt đầu, candidate vẫn có thể hủy lịch bằng `POST /api/application-details/<APPLICATION_DETAIL_ID>/cancel-schedule`.
+
+Chạy lại với một detail khác và mentor từ chối bằng cùng payload ở bước D2. Kỳ vọng không tạo session, lý do từ chối xuất hiện ở Candidate và detail quay về bước chọn mentor/chờ Admin theo số mentor còn lại.
+
+Sau buổi gặp trực tiếp, xác minh backend đưa session về `COMPLETED`. Hai phía gửi Mentor Review và Mentor Feedback giống mục 3; chỉ khi đủ cả hai thì detail mới chuyển `COMPLETED`.
 
 ## 5. Test nút vận hành Email
 
