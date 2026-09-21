@@ -130,13 +130,21 @@ describe("mentor review display utilities", () => {
     ).toBe("POST_INTERVIEW_FORMS");
   });
 
-  it("only allows cancellation before an online mentor session starts", () => {
+  it("allows candidates to cancel pending proposals and approved schedules before they start", () => {
     expect(
       canCancelMentorSchedule({
         detailStatus: "AWAITING_MENTOR_SCHEDULE_APPROVAL",
         sessionId: null,
         sessionStatus: null,
         meetingType: "ONLINE",
+      })
+    ).toBe(true);
+    expect(
+      canCancelMentorSchedule({
+        detailStatus: "PENDING",
+        sessionId: 88,
+        sessionStatus: "SCHEDULED",
+        meetingType: "OFFLINE",
       })
     ).toBe(true);
     expect(
