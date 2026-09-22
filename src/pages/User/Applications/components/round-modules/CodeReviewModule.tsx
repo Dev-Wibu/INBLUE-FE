@@ -348,6 +348,9 @@ export function CodeReviewModule({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [gradedResult, setGradedResult] = useState<ApplicationDetail | null>(null);
+  const [submitError, setSubmitError] = useState<{ message: string; traceId?: string } | null>(
+    null
+  );
 
   const isFinished =
     isCompleted ||
@@ -579,6 +582,7 @@ export function CodeReviewModule({
   const handleConfirmSubmit = async () => {
     setConfirmOpen(false);
     setSubmitting(true);
+    setSubmitError(null);
     setStep("SUBMITTING");
     try {
       const submissions = allFlattenedIssues.map<CodeReviewSubmission>((i) => ({
@@ -601,7 +605,11 @@ export function CodeReviewModule({
           onSuccess?.();
           return;
         }
-        throw new Error(res.error || t("userApplication.codeReview.submitFailedHint"));
+        const message = res.error || t("userApplication.codeReview.submitFailedHint");
+        setSubmitError({ message, traceId: res.traceId });
+        toast.error(message);
+        setStep("ERROR");
+        return;
       }
 
       const resDetail = res.data ?? null;
@@ -627,6 +635,7 @@ export function CodeReviewModule({
     } catch (err) {
       const message =
         err instanceof Error ? err.message : t("userApplication.codeReview.submitFailedHint");
+      setSubmitError({ message });
       toast.error(message);
       setStep("ERROR");
     } finally {
@@ -775,14 +784,18 @@ export function CodeReviewModule({
 
       {/* ── ERROR BANNER ── */}
       {step === "ERROR" && (
-        <div className="flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
           <AlertTriangle className="h-4 w-4 shrink-0 text-rose-500 dark:text-rose-400" />
-          <span>
-            {t(
-              "userApplicationhistory.codeReviewSubmitFailedHint",
-              "Đã có lỗi khi nộp bài. Vui lòng kiểm tra kết nối mạng và thử nộp lại."
+          <div className="min-w-0 space-y-1">
+            <p>{submitError?.message || t("userApplication.codeReview.submitFailedHint")}</p>
+            {submitError?.traceId && (
+              <p className="font-mono text-[11px] text-rose-600/80 dark:text-rose-300/80">
+                {t("userApplication.codeReview.supportTraceId", {
+                  traceId: submitError.traceId,
+                })}
+              </p>
             )}
-          </span>
+          </div>
         </div>
       )}
 

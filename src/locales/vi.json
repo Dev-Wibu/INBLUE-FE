@@ -5977,6 +5977,8 @@
       "submitConfirmCount": "Nộp {{count}} lỗi? AI sẽ chấm ngay và bạn không thể chỉnh sửa sau đó.",
       "submitConfirmHint": "AI sẽ đối chiếu các lỗi bạn tìm được với đáp án. Quá trình này có thể mất 5-30 giây.",
       "submitFailedHint": "Nộp bài thất bại. Vui lòng kiểm tra kết nối và thử lại.",
+      "aiResponseFormatError": "Dịch vụ AI trả về kết quả sai định dạng. Bài nháp của bạn vẫn được giữ; vui lòng thử nộp lại sau ít phút.",
+      "supportTraceId": "Mã tra cứu: {{traceId}}",
       "submitSuccess": "Đã nộp bài Code Review thành công!",
       "retrySubmit": "Thử nộp lại",
       "submittingReview": "Đang nộp bài review...",

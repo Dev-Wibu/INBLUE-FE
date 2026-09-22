@@ -57,6 +57,27 @@ describe("ApplicationDetailManager backend contract", () => {
     );
   });
 
+  it("preserves code-review error trace metadata for support", async () => {
+    const error = Object.assign(new Error("AI response format is invalid"), {
+      status: 500,
+      traceId: "trace-code-review-500",
+    });
+    mockPost.mockRejectedValueOnce(error);
+
+    const result = await applicationDetailManager.submitCodeReview({
+      applicationId: 189,
+      roundId: 970,
+      submissions: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "AI response format is invalid",
+      statusCode: 500,
+      traceId: "trace-code-review-500",
+    });
+  });
+
   it("accepts the intentionally empty HR score response", async () => {
     mockPost.mockResolvedValueOnce({ data: undefined });
 

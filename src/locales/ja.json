@@ -5965,6 +5965,8 @@
       "submitConfirmCount": "{{count}}問題を提出しますか？AIは即座に採点し、後から編集できません。",
       "submitConfirmHint": "AIはあなたの問題を期待されるものと比較します。5〜30秒かかる場合があります（サンドボックスLLM）。",
       "submitFailedHint": "提出に失敗しました。ネットワーク/OLLが安定した可能性があります—再度提出してみてください。",
+      "aiResponseFormatError": "AIサービスが無効な結果形式を返しました。下書きは保持されています。数分後にもう一度提出してください。",
+      "supportTraceId": "サポート参照番号: {{traceId}}",
       "submitSuccess": "コードレビューを提出しました。",
       "retrySubmit": "再度提出してみてください",
       "submittingReview": "レビュー提出中...",

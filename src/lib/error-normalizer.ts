@@ -41,6 +41,11 @@ const GENERIC_MESSAGES = new Set([
 
 const getKnownErrorPatterns = (): Array<{ pattern: RegExp; message: string }> => [
   {
+    pattern:
+      /AnythingLLM[\s\S]*cannot construct instance of [`']?java\.util\.ArrayList[\s\S]*improvementAdvice/i,
+    message: t("userApplication.codeReview.aiResponseFormatError"),
+  },
+  {
     pattern: /(bad credentials|invalid password|wrong password)/i,
     message: t("general.wrongPassword1"),
   },

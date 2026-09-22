@@ -61,6 +61,23 @@ describe("error-normalizer", () => {
     expect(normalized.message).toBe(t("general.theDataSubmittedIsInvalid"));
   });
 
+  it("identifies malformed AnythingLLM code-review feedback as a server-side AI error", () => {
+    const normalized = normalizeApiError(
+      {
+        status: 500,
+        data: {
+          traceId: "6ab268dc5b36749814f4f3a9c932fb2a",
+          error:
+            'Lỗi gọi Chat AnythingLLM [/workspace/code-review-processor/chat]: Cannot construct instance of `java.util.ArrayList` from String value through reference chain: StructuredAiFeedback["improvementAdvice"]',
+        },
+      },
+      "Fallback"
+    );
+
+    expect(normalized.message).toBe(t("userApplication.codeReview.aiResponseFormatError"));
+    expect(normalized.traceId).toBe("6ab268dc5b36749814f4f3a9c932fb2a");
+  });
+
   it("uses HTTP status mapping when backend returns generic messages", () => {
     const normalized = normalizeApiError(
       {

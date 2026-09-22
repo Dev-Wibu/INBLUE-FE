@@ -5977,6 +5977,8 @@
       "submitConfirmCount": "Submit {{count}} issues? AI will grade immediately and you can't edit afterwards.",
       "submitConfirmHint": "AI will compare your issues with the expected ones. This may take 5-30 seconds (sandbox LLM).",
       "submitFailedHint": "Submit failed. Network/LLM may have stabilized — try submitting again.",
+      "aiResponseFormatError": "The AI service returned an invalid result format. Your draft is safe; please try submitting again in a few minutes.",
+      "supportTraceId": "Support reference: {{traceId}}",
       "submitSuccess": "Code Review submitted successfully!",
       "retrySubmit": "Try submitting again",
       "submittingReview": "Submitting review...",

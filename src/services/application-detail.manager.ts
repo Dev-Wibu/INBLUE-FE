@@ -66,6 +66,17 @@ export class ApplicationDetailManager {
     return t("general.anUnknownErrorHasOccurred");
   }
 
+  private extractErrorTraceId(error: unknown): string | undefined {
+    if (!error || typeof error !== "object") return undefined;
+
+    const value = error as {
+      traceId?: unknown;
+      response?: { data?: { traceId?: unknown } };
+    };
+    const traceId = value.traceId ?? value.response?.data?.traceId;
+    return typeof traceId === "string" && traceId.trim() ? traceId.trim() : undefined;
+  }
+
   /**
    * Submit application detail (CV screening, quiz answers, email, coding, etc.)
    * POST /api/application-details/submit (multipart/form-data)
@@ -249,6 +260,7 @@ export class ApplicationDetailManager {
         success: false,
         error: this.extractErrorMessage(error),
         statusCode: this.extractErrorStatus(error),
+        traceId: this.extractErrorTraceId(error),
       };
     }
   }
