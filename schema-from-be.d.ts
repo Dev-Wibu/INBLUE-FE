@@ -4094,8 +4094,6 @@ export interface components {
             level?: string;
         };
         CvEvaluationResponse: {
-            /** Format: double */
-            score?: number;
             extraMetrics?: {
                 [key: string]: unknown;
             };
@@ -4988,10 +4986,10 @@ export interface components {
             /** Format: int64 */
             totalElements?: number;
             pageable?: components["schemas"]["PageableObject"];
-            first?: boolean;
-            last?: boolean;
             /** Format: int32 */
             numberOfElements?: number;
+            first?: boolean;
+            last?: boolean;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["PostResponse"][];
@@ -5369,10 +5367,10 @@ export interface components {
             createdAt?: string;
         };
         ApplicationContext: {
-            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             applicationName?: string;
             /** Format: int64 */
             startupDate?: number;
+            autowireCapableBeanFactory?: components["schemas"]["AutowireCapableBeanFactory"];
             parent?: components["schemas"]["ApplicationContext"];
             id?: string;
             displayName?: string;
@@ -5469,22 +5467,22 @@ export interface components {
             error?: boolean;
         };
         JspConfigDescriptor: {
-            taglibs?: components["schemas"]["TaglibDescriptor"][];
             jspPropertyGroups?: components["schemas"]["JspPropertyGroupDescriptor"][];
+            taglibs?: components["schemas"]["TaglibDescriptor"][];
         };
         JspPropertyGroupDescriptor: {
-            isXml?: string;
+            deferredSyntaxAllowedAsLiteral?: string;
+            errorOnUndeclaredNamespace?: string;
+            includePreludes?: string[];
+            scriptingInvalid?: string;
             errorOnELNotFound?: string;
             pageEncoding?: string;
-            scriptingInvalid?: string;
-            includePreludes?: string[];
             includeCodas?: string[];
-            errorOnUndeclaredNamespace?: string;
-            elIgnored?: string;
-            urlPatterns?: string[];
             defaultContentType?: string;
+            urlPatterns?: string[];
+            elIgnored?: string;
+            isXml?: string;
             trimDirectiveWhitespaces?: string;
-            deferredSyntaxAllowedAsLiteral?: string;
             buffer?: string;
         };
         RedirectView: {
@@ -5508,24 +5506,18 @@ export interface components {
             expandUriTemplateVariables?: boolean;
             propagateQueryParams?: boolean;
             hosts?: string[];
-            redirectView?: boolean;
             propagateQueryProperties?: boolean;
+            redirectView?: boolean;
+            attributesCSV?: string;
             attributesMap?: {
                 [key: string]: unknown;
             };
             attributes?: {
                 [key: string]: string;
             };
-            attributesCSV?: string;
         };
         ServletContext: {
             sessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            /** Format: int32 */
-            sessionTimeout?: number;
-            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
-            virtualServerName?: string;
-            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
-            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             requestCharacterEncoding?: string;
             responseCharacterEncoding?: string;
             /** Format: int32 */
@@ -5539,8 +5531,14 @@ export interface components {
             filterRegistrations?: {
                 [key: string]: components["schemas"]["FilterRegistration"];
             };
-            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            defaultSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
+            effectiveSessionTrackingModes?: ("COOKIE" | "URL" | "SSL")[];
             serverInfo?: string;
+            /** Format: int32 */
+            sessionTimeout?: number;
+            jspConfigDescriptor?: components["schemas"]["JspConfigDescriptor"];
+            sessionCookieConfig?: components["schemas"]["SessionCookieConfig"];
+            virtualServerName?: string;
             initParameterNames?: unknown;
             contextPath?: string;
             attributeNames?: unknown;
@@ -5621,9 +5619,9 @@ export interface components {
         SessionCookieConfig: {
             /** Format: int32 */
             maxAge?: number;
-            httpOnly?: boolean;
             secure?: boolean;
             domain?: string;
+            httpOnly?: boolean;
             path?: string;
             name?: string;
             attributes?: {
