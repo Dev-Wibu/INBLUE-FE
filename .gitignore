@@ -32,6 +32,20 @@ cypress/videos/
 cypress/screenshots/
 .nyc_output/
 
+# Generated test reports, previews and local QA artifacts
+/outputs/
+*.inspect.ndjson
+.codex_tmp_*/
+compare.txt
+compare_final_sample.py
+docx_unit*.txt
+extract_docx_unit.py
+inspect_compare.py
+update_test_document.py
+browser_console.mjs
+*.docx
+*.pdf
+
 # Nx
 .nx/cache
 .nx/workspace-data
