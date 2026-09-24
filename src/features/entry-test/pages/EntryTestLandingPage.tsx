@@ -60,6 +60,7 @@ export function EntryTestLandingPage() {
   );
   const activeAttemptId = Number.isSafeInteger(userId) ? getActiveAttemptId(userId) : null;
   const displayedSkills = preference.data?.languagesJson ?? competency.data?.languagesJson ?? [];
+  const needsRetest = Boolean(competency.data && preference.data?.needRetest);
 
   const handleStart = async () => {
     if (!preference.data?.targetRole) {
@@ -143,7 +144,7 @@ export function EntryTestLandingPage() {
         onClick: () => navigate(`/user/entry-test/session/${activeAttemptId}`),
       }
     : {
-        label: preference.data?.needRetest
+        label: needsRetest
           ? t("entryTestLanding.retake")
           : preference.data?.targetRole
             ? t("entryTestLanding.start")
@@ -186,7 +187,7 @@ export function EntryTestLandingPage() {
               {!activeAttemptId && <PrimaryActionIcon className="h-4 w-4" />}
             </Button>
           </div>
-          {preference.data?.needRetest && (
+          {needsRetest && (
             <div className="relative mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
               <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
               <div className="min-w-0 flex-1">

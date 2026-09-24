@@ -113,5 +113,8 @@ yarn.lock
 !/docs/technical-spec/
 !/docs/technical-spec/**
 
+# Local defense materials (never commit)
+/defense-materials/
+
 .playwright-mcp
 .playwright-mcp/*
