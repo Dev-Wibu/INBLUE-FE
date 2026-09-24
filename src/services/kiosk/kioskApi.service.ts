@@ -112,6 +112,18 @@ export async function enterKioskApi(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 524) {
+        throw new Error(
+          "Máy chủ Kiosk phản hồi quá thời gian (524). Vui lòng thử lại sau ít phút hoặc báo quản trị viên kiểm tra dịch vụ AI."
+        );
+      }
+
+      if (response.status >= 500) {
+        throw new Error(
+          `Dịch vụ Kiosk đang gặp sự cố (${response.status}). Vui lòng thử lại sau ít phút.`
+        );
+      }
+
       let errorMsg = "Mã PIN không đúng hoặc chưa tới giờ phỏng vấn (±15 phút). Vui lòng thử lại!";
       try {
         const errJson = await response.json();
