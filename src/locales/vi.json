@@ -8171,6 +8171,7 @@
     "loadingGateway": "Đang tải cổng thanh toán…",
     "jdPurchaseStatus_PURCHASED": "Đã mua",
     "jdPurchaseStatus_USED": "Đã dùng",
+    "jdPurchaseStatus_EXPIRED": "Đã hết hạn",
     "jdPurchaseDate": "Ngày mua",
     "jdPurchaseAmount": "Số tiền",
     "pay": "Thanh toán",

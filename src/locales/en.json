@@ -8171,6 +8171,7 @@
     "loadingGateway": "Loading payment gateway…",
     "jdPurchaseStatus_PURCHASED": "Purchased",
     "jdPurchaseStatus_USED": "Used",
+    "jdPurchaseStatus_EXPIRED": "Expired",
     "jdPurchaseDate": "Purchase Date",
     "jdPurchaseAmount": "Amount",
     "pay": "Pay",

@@ -8170,6 +8170,7 @@
     "loadingGateway": "決済ゲートウェイを読み込み中…",
     "jdPurchaseStatus_PURCHASED": "購入済み",
     "jdPurchaseStatus_USED": "使用済み",
+    "jdPurchaseStatus_EXPIRED": "有効期限切れ",
     "jdPurchaseDate": "購入日",
     "jdPurchaseAmount": "金額",
     "pay": "お支払い",
