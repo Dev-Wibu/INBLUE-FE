@@ -318,7 +318,6 @@ export function MentorReviewModule({
           mentor={resolveSelectedMentor(fallbackMentors, detail?.mentorId)}
           refreshing={detailRefreshing}
           onRefresh={() => refetchDetail()}
-          onChangeProposal={() => setPreviewStep("SCHEDULE")}
           detailId={detailId}
           onCanceled={() => {
             setPreviewStep(null);
@@ -540,7 +539,6 @@ function AwaitingScheduleApprovalStep({
   mentor,
   refreshing,
   onRefresh,
-  onChangeProposal,
   detailId,
   onCanceled,
 }: {
@@ -548,7 +546,6 @@ function AwaitingScheduleApprovalStep({
   mentor: MentorResponse | null;
   refreshing: boolean;
   onRefresh: () => void | Promise<unknown>;
-  onChangeProposal: () => void;
   detailId: number;
   onCanceled: () => void;
 }) {
@@ -632,14 +629,6 @@ function AwaitingScheduleApprovalStep({
           tooltip={t("common.refresh")}
           className="border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
         />
-        <Button
-          type="button"
-          size="sm"
-          className="h-9 bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-          onClick={onChangeProposal}>
-          <Calendar className="h-4 w-4" />
-          {t("mentorSchedule.changeProposal")}
-        </Button>
       </div>
     </Card>
   );
