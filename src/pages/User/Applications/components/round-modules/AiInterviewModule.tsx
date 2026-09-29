@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useApplication } from "@/hooks/useApplication";
 import { useInterviewSession, useInterviewSessionsByUser } from "@/hooks/useInterviewSession";
 import {
   useActiveKiosks,
@@ -1615,9 +1616,17 @@ function AiInterviewResultView({
     detail?.applicationId ?? 0,
     (detail?.applicationId ?? 0) > 0
   );
+  const profileUserId =
+    (applicationCandidateProfile as { user?: { id?: number } } | undefined)?.user?.id ?? 0;
+  const { data: applicationData } = useApplication(
+    detail?.applicationId ?? 0,
+    directSessionId === 0 && (detail?.applicationId ?? 0) > 0 && profileUserId === 0
+  );
+  const candidateUserId =
+    profileUserId || (applicationData as { userId?: number } | undefined)?.userId || 0;
   const { data: userSessionsRaw } = useInterviewSessionsByUser(
-    currentUserId,
-    directSessionId === 0 && currentUserId > 0
+    candidateUserId || currentUserId,
+    directSessionId === 0 && (candidateUserId > 0 || currentUserId > 0)
   );
 
   const matchedSessionFromUser = useMemo(() => {
