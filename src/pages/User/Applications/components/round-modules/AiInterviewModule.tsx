@@ -19,6 +19,7 @@ import { fetchClient } from "@/lib/api";
 import { formatDateTime } from "@/lib/formatting";
 import { isFutureKioskSlot } from "@/lib/kiosk-slot";
 import { cn } from "@/lib/utils";
+import { useCandidateProfileByApplication } from "@/services/candidate-profile.manager";
 import { kioskManager, type Kiosk, type KioskSchedule } from "@/services/kiosk.manager";
 import { useAuthStore } from "@/stores/authStore";
 import { useQuery } from "@tanstack/react-query";
@@ -1610,6 +1611,10 @@ function AiInterviewResultView({
     0;
 
   const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
+  const { data: applicationCandidateProfile } = useCandidateProfileByApplication(
+    detail?.applicationId ?? 0,
+    (detail?.applicationId ?? 0) > 0
+  );
   const { data: userSessionsRaw } = useInterviewSessionsByUser(
     currentUserId,
     directSessionId === 0 && currentUserId > 0
@@ -1729,7 +1734,11 @@ function AiInterviewResultView({
   }, [rawDetail, sessionData?.resultDetail]);
 
   const questions = parsedResultDetail?.history ?? [];
-  const candidateProfile = sessionData?.candidateProfile ?? rawDetail?.candidateProfile ?? null;
+  const candidateProfile =
+    sessionData?.candidateProfile ??
+    rawDetail?.candidateProfile ??
+    applicationCandidateProfile ??
+    null;
 
   const completedStart =
     sessionData?.createdAt ?? detail?.sessionInfo?.startTime ?? detail?.startedAt;

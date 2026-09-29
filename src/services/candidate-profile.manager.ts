@@ -201,5 +201,12 @@ import { $api, fetchClient } from "@/lib/api";
 export const useCandidateProfiles = () => $api.useQuery("get", "/api/candidate-profiles");
 export const useCandidateProfile = (userId: number) =>
   $api.useQuery("get", "/api/candidate-profiles/{userId}", { params: { path: { userId } } });
+export const useCandidateProfileByApplication = (applicationId: number, enabled = true) =>
+  $api.useQuery(
+    "get",
+    "/api/candidate-profiles/application/{applicationId}",
+    { params: { path: { applicationId } } },
+    { enabled: enabled && applicationId > 0 }
+  );
 export const useCreateCandidateProfile = () => $api.useMutation("post", "/api/candidate-profiles");
 export const useUpdateCandidateProfile = () => $api.useMutation("put", "/api/candidate-profiles");
