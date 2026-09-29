@@ -1604,7 +1604,10 @@ function AiInterviewResultView({
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const rawDetail = detail as any;
   const directSessionId =
-    detail?.aiInterviewSessionId ?? rawDetail?.submissionData?.aiInterviewSessionId ?? 0;
+    detail?.aiInterviewSessionId ??
+    rawDetail?.sessionId ??
+    rawDetail?.submissionData?.aiInterviewSessionId ??
+    0;
 
   const currentUserId = useAuthStore((s) => s.user?.id) ?? 0;
   const { data: userSessionsRaw } = useInterviewSessionsByUser(
@@ -1709,7 +1712,11 @@ function AiInterviewResultView({
   }, [resultVerdict, t]);
 
   const parsedResultDetail = useMemo(() => {
-    const raw = sessionData?.resultDetail;
+    const raw =
+      sessionData?.resultDetail ??
+      rawDetail?.resultDetail ??
+      rawDetail?.interviewResultDetail ??
+      rawDetail?.submissionData?.resultDetail;
     if (!raw) return null;
     if (typeof raw === "string") {
       try {
@@ -1719,10 +1726,10 @@ function AiInterviewResultView({
       }
     }
     return raw;
-  }, [sessionData?.resultDetail]);
+  }, [rawDetail, sessionData?.resultDetail]);
 
   const questions = parsedResultDetail?.history ?? [];
-  const candidateProfile = sessionData?.candidateProfile ?? null;
+  const candidateProfile = sessionData?.candidateProfile ?? rawDetail?.candidateProfile ?? null;
 
   const completedStart =
     sessionData?.createdAt ?? detail?.sessionInfo?.startTime ?? detail?.startedAt;
