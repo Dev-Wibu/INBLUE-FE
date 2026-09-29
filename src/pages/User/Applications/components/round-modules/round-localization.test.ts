@@ -102,5 +102,8 @@ describe("round localization", () => {
     expect(localizeRoundName("Lập trình", "CODING", t)).toBe("Coding");
     expect(localizeRoundName("Đánh giá Code", "CODE_REVIEW", t)).toBe("Code Review");
     expect(localizeRoundName("Phỏng vấn AI", "AI_INTERVIEW", t)).toBe("AI Interview");
+    expect(
+      localizeRoundName("Phỏng vấn chuyên sâu & Đánh giá năng lực hành vi", "AI_INTERVIEW", t)
+    ).toBe("AI Interview");
   });
 });

@@ -647,7 +647,9 @@ export function RoundCanvasEditorWorkspace({
       const generatedRounds: UIRound[] = [...result.data.rounds]
         .sort((a, b) => (a.roundOrder ?? 0) - (b.roundOrder ?? 0))
         .map((round, index) => ({
-          name: round.name || `${t("userApplicationhistory.round")} ${index + 1}`,
+          name:
+            getLocalizedRoundName(round.name || "", round.roundType, t) ||
+            `${t("userApplicationhistory.round")} ${index + 1}`,
           roundOrder: index + 1,
           roundType: AVAILABLE_ROUNDS_TEMPLATES.some(
             (template) => template.type === round.roundType

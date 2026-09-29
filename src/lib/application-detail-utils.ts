@@ -41,7 +41,12 @@ export function inferRoundType(detail: ApplicationDetail): string | null {
   // Fallback: detect AI Interview from roundName when sessionId is null
   // (e.g. PENDING rows where the candidate hasn't started the AI session yet).
   const lowerName = (detail as { roundName?: string }).roundName?.toLowerCase() ?? "";
-  if (lowerName.includes("ai interview") || lowerName.includes("phỏng vấn ai")) {
+  if (
+    lowerName.includes("ai interview") ||
+    lowerName.includes("phỏng vấn ai") ||
+    /phỏng\s*vấn.*chuyên sâu/.test(lowerName) ||
+    /đánh giá.*năng lực hành vi/.test(lowerName)
+  ) {
     return "AI_INTERVIEW";
   }
 

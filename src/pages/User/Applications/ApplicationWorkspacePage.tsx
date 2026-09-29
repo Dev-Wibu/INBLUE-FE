@@ -729,7 +729,7 @@ export function ApplicationWorkspacePage() {
                               {t("userApplicationhistory.scoreLabel", "Điểm số")}
                             </span>
                             <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                              {activeDetail.finalScore}
+                              {Math.round(Number(activeDetail.finalScore))}
                               <span className="text-xs font-normal text-slate-400">/100</span>
                             </p>
                           </div>

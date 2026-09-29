@@ -160,7 +160,9 @@ export function HorizontalPipeline({
               ? formatAiInterviewScore(detail.finalScore, "auto")
               : isAiInterviewRound && detail?.hrScore == null && aiEvaluationScore != null
                 ? formatAiInterviewScore(aiEvaluationScore, "auto")
-                : rawScore;
+                : typeof rawScore === "number"
+                  ? Math.round(rawScore)
+                  : rawScore;
 
           return (
             <div key={round.id ?? idx} className="flex items-center gap-2.5 sm:gap-3.5">

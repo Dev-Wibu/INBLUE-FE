@@ -75,7 +75,11 @@ function matchesBuiltInRoundName(value: string, roundType: string): boolean {
     case "CODE_REVIEW":
       return /code\s*review|review\s*(đoạn|source|mã)|đánh\s*giá\s*mã/.test(value);
     case "AI_INTERVIEW":
-      return /ai\s*interview|interview\s*ai|phỏng\s*vấn\s*ai/.test(value);
+      return (
+        /ai\s*interview|interview\s*ai|phỏng\s*vấn\s*ai/.test(value) ||
+        /phỏng\s*vấn.*chuyên sâu/.test(value) ||
+        /đánh giá.*năng lực hành vi/.test(value)
+      );
     case "MENTOR_REVIEW":
       return /mentor\s*(review|interview)|đánh\s*giá\s*mentor|phỏng\s*vấn\s*mentor/.test(value);
     default:
