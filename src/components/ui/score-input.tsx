@@ -327,10 +327,10 @@ export function ScoreInput({
 
   // Simple clean variant (plain number input)
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex min-w-0 items-center", className)}>
       <div
         className={cn(
-          "flex h-11 w-full items-center rounded-xl border bg-white px-3 shadow-sm transition-all dark:bg-slate-950",
+          "flex h-11 w-full min-w-0 items-center rounded-xl border bg-white px-1 shadow-sm transition-all dark:bg-slate-950",
           colors.border,
           disabled && "cursor-not-allowed opacity-50"
         )}>
@@ -360,7 +360,7 @@ export function ScoreInput({
             if (e.key === "Enter") commit(raw);
           }}
           className={cn(
-            "text-slate-850 h-full w-full bg-transparent text-center text-base font-bold tabular-nums outline-none focus:outline-none dark:text-white",
+            "text-slate-850 h-full min-w-0 flex-1 bg-transparent px-1 text-center text-base font-semibold tabular-nums outline-none focus:outline-none dark:text-white",
             "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           )}
         />

@@ -39,6 +39,7 @@ interface CodingEditorProps {
   onPassThresholdChange: (_val: number) => void;
   timeLimitMinutes: number;
   onTimeLimitMinutesChange: (_val: number) => void;
+  onSubflowChange?: (_active: boolean) => void;
 }
 
 type RightPaneView = "idle" | "view" | "bank" | "create";
@@ -130,12 +131,18 @@ export const CodingEditor = React.forwardRef<
       onPassThresholdChange,
       timeLimitMinutes,
       onTimeLimitMinutesChange,
+      onSubflowChange,
     },
     ref
   ) => {
     const { t } = useTranslation();
     const [rightView, setRightView] = React.useState<RightPaneView>("idle");
     const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+
+    React.useEffect(() => {
+      onSubflowChange?.(rightView === "bank");
+      return () => onSubflowChange?.(false);
+    }, [onSubflowChange, rightView]);
 
     // System problem bank states
     const [bankProblems, setBankProblems] = React.useState<CodingProblem[]>([]);
@@ -563,14 +570,19 @@ export const CodingEditor = React.forwardRef<
     };
 
     return (
-      <div className="grid h-full grid-cols-12 gap-0">
+      <div className="grid min-h-full grid-cols-1 min-[1100px]:grid-cols-[360px_minmax(0,1fr)] md:h-full md:min-h-0 md:grid-cols-[300px_minmax(0,1fr)]">
         {/* ==================== LEFT COLUMN ==================== */}
-        <div className="col-span-4 flex flex-col border-r border-slate-100 dark:border-slate-800/60">
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+        <div className="flex min-h-0 flex-col border-b border-slate-200 bg-slate-50/70 md:border-r md:border-b-0 dark:border-slate-600 dark:bg-slate-950/45">
+          <div className="border-b border-slate-200 px-7 py-4 dark:border-slate-700">
+            <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("general.generalConfiguration")}
+            </h4>
+          </div>
+          <div className="flex-1 space-y-8 overflow-y-visible py-6 pr-5 pl-7 md:min-h-0 md:overflow-y-auto">
             {/* --- Score Settings --- */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-4">
-                <div className="w-[55%] space-y-1">
+            <div className="space-y-7">
+              <div className="grid grid-cols-2 items-start gap-4">
+                <div className="space-y-2">
                   <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                     {t("adminCodeReviewProblem.maxScore")}
                   </Label>
@@ -581,11 +593,12 @@ export const CodingEditor = React.forwardRef<
                     step={5}
                     accent="indigo"
                     variant="simple"
+                    className="[&>div]:h-[42px] [&>div]:rounded-[10px]"
                     onChange={onMaxScoreChange}
                   />
                 </div>
 
-                <div className="w-[45%] space-y-1">
+                <div className="space-y-2">
                   <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                     {t("common.time")}
                   </Label>
@@ -599,7 +612,7 @@ export const CodingEditor = React.forwardRef<
                         onChange={(e) => onTimeLimitMinutesChange(Number(e.target.value))}
                         onBlur={() => setEditingTime(false)}
                         onKeyDown={(e) => e.key === "Enter" && setEditingTime(false)}
-                        className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="h-[42px] w-full [appearance:textfield] rounded-[10px] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-700 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                       <span className="shrink-0 text-[9px] text-slate-400">
                         {t("common.minute")}
@@ -609,7 +622,7 @@ export const CodingEditor = React.forwardRef<
                     <button
                       type="button"
                       onClick={() => setEditingTime(true)}
-                      className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
+                      className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-[10px] border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300">
                       <Timer className="h-4 w-4 text-slate-400" />
                       {timeLimitMinutes > 0
                         ? `${timeLimitMinutes} ${t("adminLabels.minutes")}`
@@ -619,7 +632,7 @@ export const CodingEditor = React.forwardRef<
                 </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-4 rounded-xl border border-slate-200 bg-white px-4 py-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
                 <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                   {t("adminCodingProblem.minimumPassingScore")}
                 </Label>
@@ -631,7 +644,7 @@ export const CodingEditor = React.forwardRef<
                     step={1}
                     accent="emerald"
                     variant="circular"
-                    size="sm"
+                    size="md"
                     onChange={(val) => {
                       onPassThresholdChange(maxScore > 0 ? Math.round((val / maxScore) * 100) : 80);
                     }}
@@ -640,10 +653,8 @@ export const CodingEditor = React.forwardRef<
               </div>
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-800/60" />
-
             {/* --- Coding Problems Navigation --- */}
-            <div className="space-y-2.5">
+            <div className="space-y-4 border-t border-slate-200 pt-8 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
                   {t("adminCodingProblem.problemWithParen")}
@@ -651,7 +662,7 @@ export const CodingEditor = React.forwardRef<
                 </h4>
               </div>
 
-              <div className="flex gap-2">
+              <div className="space-y-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -659,7 +670,7 @@ export const CodingEditor = React.forwardRef<
                   disabled={disabled}
                   onClick={openBank}
                   className={cn(
-                    "h-7 flex-1 justify-start border-slate-200 text-[11px] font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900",
+                    "h-10 w-full justify-start rounded-[10px] border-slate-200 text-xs font-semibold hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30",
                     rightView === "bank" &&
                       "border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400"
                   )}>
@@ -673,7 +684,7 @@ export const CodingEditor = React.forwardRef<
                   disabled={disabled}
                   onClick={openCreate}
                   className={cn(
-                    "h-7 flex-1 justify-start border-slate-200 text-[11px] font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900",
+                    "h-10 w-full justify-start rounded-[10px] border-dashed border-slate-300 text-xs font-semibold hover:border-emerald-400 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/30",
                     rightView === "create" &&
                       "border-emerald-500 bg-emerald-50/50 text-emerald-600 dark:border-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
                   )}>
@@ -693,27 +704,25 @@ export const CodingEditor = React.forwardRef<
                       type="button"
                       onClick={() => handleSelectProblem(idx)}
                       className={cn(
-                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-all",
+                        "flex min-h-12 w-full min-w-0 items-center gap-2.5 rounded-[10px] border px-3 py-2 text-left transition-all",
                         isActive
                           ? "border-indigo-500 bg-indigo-50/50 shadow-sm dark:border-indigo-600 dark:bg-indigo-950/20"
                           : "hover:border-slate-350 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
                       )}>
                       <span
                         className={cn(
-                          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold ring-1 ring-inset",
+                          "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ring-1 ring-inset",
                           isActive
                             ? "bg-indigo-600 text-white ring-indigo-600"
                             : "bg-slate-50 text-slate-500 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800"
                         )}>
                         {idx + 1}
                       </span>
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="dark:text-slate-250 truncate text-xs font-semibold text-slate-800">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <div className="dark:text-slate-250 min-w-0 flex-1 truncate text-xs font-semibold text-slate-800">
                           {problem.title || t("uiLabels.assignmentNumber", { id })}
                         </div>
-                        <div className="flex items-center gap-2">
-                          {difficultyBadge(problem.difficulty)}
-                        </div>
+                        {difficultyBadge(problem.difficulty)}
                       </div>
                     </button>
                   );
@@ -732,8 +741,17 @@ export const CodingEditor = React.forwardRef<
         </div>
 
         {/* ==================== RIGHT COLUMN ==================== */}
-        <div className="col-span-8 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex min-h-[420px] min-w-0 flex-col overflow-hidden md:min-h-0">
+          <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+            <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+              {t("general.detailedConfiguration")}
+            </h4>
+          </div>
+          <div
+            className={cn(
+              "flex-1",
+              rightView === "bank" ? "min-h-0 overflow-hidden" : "overflow-y-auto py-6 pr-7 pl-6"
+            )}>
             {/* --- IDLE STATE --- */}
             {rightView === "idle" && (
               <div className="flex h-full flex-col items-center justify-center text-center">
@@ -942,13 +960,13 @@ export const CodingEditor = React.forwardRef<
 
             {/* --- BANK STATE --- */}
             {rightView === "bank" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3 dark:border-slate-800/60">
+              <div className="flex h-full min-h-0 flex-col bg-white dark:bg-slate-900">
+                <div className="flex h-12 shrink-0 items-center gap-2.5 border-b border-slate-200 px-6 dark:border-slate-700">
                   <FolderOpen className="h-4 w-4 text-indigo-500" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {t("adminCodingProblem.codingProblemBank")}
                   </h3>
-                  <span className="ml-auto text-xs font-medium text-slate-400">
+                  <span className="ml-auto rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
                     {t("common.selected")}{" "}
                     <strong className="text-indigo-600 dark:text-indigo-400">
                       {selectedBankIds.length}
@@ -956,15 +974,14 @@ export const CodingEditor = React.forwardRef<
                   </span>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3 md:flex-row dark:border-slate-800 dark:bg-slate-950">
+                <div className="flex shrink-0 flex-col gap-2.5 border-b border-slate-200 bg-slate-50/70 px-6 py-3 md:flex-row dark:border-slate-700 dark:bg-slate-950/35">
                   <div className="relative flex-1">
                     <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
                     <Input
                       value={bankSearch}
                       onChange={(e) => setBankSearch(e.target.value)}
                       placeholder={t("adminCodeReviewProblem.searchProblem")}
-                      className="h-9 border-slate-200 bg-white pl-8 text-xs dark:border-slate-800 dark:bg-slate-950"
+                      className="h-9 rounded-[10px] border-slate-200 bg-white pl-8 text-xs dark:border-slate-700 dark:bg-slate-950"
                     />
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -974,7 +991,7 @@ export const CodingEditor = React.forwardRef<
                         type="button"
                         onClick={() => setBankDifficulty(diff)}
                         className={cn(
-                          "rounded-full border px-3 py-1 text-[10px] font-bold transition-all",
+                          "h-7 rounded-full border px-3 text-[10px] font-semibold transition-all",
                           bankDifficulty === diff
                             ? "border-indigo-600 bg-indigo-600 text-white"
                             : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"
@@ -991,8 +1008,7 @@ export const CodingEditor = React.forwardRef<
                   </div>
                 </div>
 
-                {/* Problem list */}
-                <div className="max-h-[360px] space-y-2.5 overflow-y-auto pr-1">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 py-3">
                   {isLoadingBank ? (
                     <div className="py-10 text-center text-xs text-slate-400">
                       {t("adminCodeReviewProblem.loadingProblemList")}
@@ -1007,7 +1023,7 @@ export const CodingEditor = React.forwardRef<
                           key={idx}
                           onClick={() => !isAdded && toggleBankSelection(p.id)}
                           className={cn(
-                            "flex items-start gap-3 rounded-xl border p-3 transition-all",
+                            "flex items-start gap-3 rounded-[10px] border p-3.5 transition-all",
                             isAdded
                               ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60 dark:border-slate-800 dark:bg-slate-900/10"
                               : isSelected
@@ -1055,29 +1071,35 @@ export const CodingEditor = React.forwardRef<
                   )}
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/60">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setRightView("idle");
-                      setSelectedIndex(null);
-                    }}
-                    className="h-8 border-slate-200 text-xs dark:border-slate-800">
-                    {t("common.cancel")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={selectedBankIds.length === 0}
-                    onClick={handleAddSelectedFromBank}
-                    className="h-8 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
-                    {t("common.add")}
-                    {selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""}{" "}
-                    {t("adminCodingProblem.intoRound")}
-                  </Button>
+                <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-t border-slate-200 bg-slate-100/80 px-6 dark:border-slate-700 dark:bg-slate-900">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {selectedBankIds.length > 0
+                      ? `${selectedBankIds.length} ${t("common.selected").toLowerCase()}`
+                      : t("adminCodingProblem.selectProblemToViewDetail")}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setRightView("idle");
+                        setSelectedIndex(null);
+                      }}
+                      className="h-9 rounded-[10px] border-slate-300 bg-white px-4 text-xs dark:border-slate-700 dark:bg-slate-950">
+                      {t("common.cancel")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={selectedBankIds.length === 0}
+                      onClick={handleAddSelectedFromBank}
+                      className="h-9 min-w-44 rounded-[10px] bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
+                      {t("common.add")}
+                      {selectedBankIds.length > 0 ? ` (${selectedBankIds.length})` : ""}{" "}
+                      {t("adminCodingProblem.intoRound")}
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

@@ -25,6 +25,36 @@ const incompletePlan = {
 };
 
 describe("EvaluationPlanEditor validation timing", () => {
+  it("constrains long metric codes and wraps long metric names inside their columns", () => {
+    const longCode = "ACADEMIC_BACKGROUND_AND_PROFESSIONAL_EXPERIENCE";
+    const longName = "Academic background, specialist knowledge, and relevant work experience";
+    const { container } = render(
+      <EvaluationPlanEditor
+        value={{
+          metrics: [
+            {
+              code: longCode,
+              name: longName,
+              description: "",
+              weight: 100,
+              maxScore: 100,
+              required: false,
+              minimumScore: 0,
+            },
+          ],
+        }}
+        onChange={vi.fn()}
+      />
+    );
+
+    const code = container.querySelector(`span[title="${longCode}"]`);
+    const name = container.querySelector(`span[title="${longName}"]`);
+
+    expect(code).toHaveClass("truncate");
+    expect(name).toHaveClass("line-clamp-2", "break-words");
+    expect(container.querySelector("colgroup")).not.toBeNull();
+  });
+
   it("keeps an untouched form calm, then reveals errors on blur or save attempt", () => {
     const onChange = vi.fn();
     const { container, rerender } = render(

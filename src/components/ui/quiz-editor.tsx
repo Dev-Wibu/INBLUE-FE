@@ -38,6 +38,7 @@ export interface QuizQuestion {
   options?: string[];
   correctAnswer?: string;
   points?: number;
+  questionLevel?: string;
 }
 
 interface QuizEditorProps {
@@ -51,6 +52,7 @@ interface QuizEditorProps {
   onPassThresholdChange: (val: number) => void;
   timeLimitMinutes: number;
   onTimeLimitMinutesChange: (val: number) => void;
+  onSubflowChange?: (_active: boolean) => void;
 }
 
 type RightPaneView = "idle" | "view" | "edit" | "bank";
@@ -65,6 +67,7 @@ export function QuizEditor({
   onPassThresholdChange,
   timeLimitMinutes,
   onTimeLimitMinutesChange,
+  onSubflowChange,
 }: QuizEditorProps) {
   const { t } = useTranslation();
   // Question Bank API state
@@ -103,6 +106,11 @@ export function QuizEditor({
   // Right pane state
   const [rightView, setRightView] = React.useState<RightPaneView>("idle");
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    onSubflowChange?.(rightView === "bank");
+    return () => onSubflowChange?.(false);
+  }, [onSubflowChange, rightView]);
 
   // Edit form states
   const [editForm, setEditForm] = React.useState<QuizQuestion>({
@@ -249,6 +257,7 @@ export function QuizEditor({
         options: q?.options && q.options.length > 0 ? [...q.options] : ["", "", "", ""],
         correctAnswer: q?.correctAnswer || (q?.options ? q.options[0] : ""),
         points: 10,
+        questionLevel: q?.questionLevel,
       };
     });
     onChange([...questions, ...selectedQuestions]);
@@ -260,15 +269,20 @@ export function QuizEditor({
 
   // ========================== RENDER ==========================
   return (
-    <div className="grid h-full grid-cols-12 gap-0">
+    <div className="grid min-h-full grid-cols-1 min-[1100px]:grid-cols-[360px_minmax(0,1fr)] md:h-full md:min-h-0 md:grid-cols-[300px_minmax(0,1fr)]">
       {/* ==================== LEFT COLUMN ==================== */}
-      <div className="col-span-4 flex flex-col border-r border-slate-100 dark:border-slate-800/60">
-        <div className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div className="flex min-h-0 flex-col border-b border-slate-200 bg-slate-50/70 md:border-r md:border-b-0 dark:border-slate-600 dark:bg-slate-950/45">
+        <div className="border-b border-slate-200 px-7 py-4 dark:border-slate-700">
+          <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            {t("general.generalConfiguration")}
+          </h4>
+        </div>
+        <div className="flex-1 space-y-8 overflow-y-visible py-6 pr-5 pl-7 md:min-h-0 md:overflow-y-auto">
           {/* --- Score Settings Compact --- */}
-          <div className="space-y-3">
+          <div className="space-y-7">
             {/* Max Score + Time in one row */}
-            <div className="flex items-start gap-4">
-              <div className="w-[55%] space-y-1">
+            <div className="grid grid-cols-2 items-start gap-4">
+              <div className="space-y-2">
                 <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                   {t("adminCodeReviewProblem.maxScore")}
                 </Label>
@@ -279,12 +293,13 @@ export function QuizEditor({
                   step={5}
                   accent="indigo"
                   variant="simple"
+                  className="[&>div]:h-[42px] [&>div]:rounded-[10px]"
                   onChange={onMaxScoreChange}
                 />
               </div>
 
               {/* Time - compact badge style */}
-              <div className="w-[45%] space-y-1">
+              <div className="space-y-2">
                 <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                   {t("common.time")}
                 </Label>
@@ -298,7 +313,7 @@ export function QuizEditor({
                       onChange={(e) => onTimeLimitMinutesChange(Number(e.target.value))}
                       onBlur={() => setEditingTime(false)}
                       onKeyDown={(e) => e.key === "Enter" && setEditingTime(false)}
-                      className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      className="h-[42px] w-full [appearance:textfield] rounded-[10px] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-700 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                     <span className="shrink-0 text-[9px] text-slate-400">{t("common.minute")}</span>
                   </div>
@@ -306,7 +321,7 @@ export function QuizEditor({
                   <button
                     type="button"
                     onClick={() => setEditingTime(true)}
-                    className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
+                    className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-[10px] border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300">
                     <Timer className="h-4 w-4 text-slate-400" />
                     {timeLimitMinutes > 0
                       ? `${timeLimitMinutes} ${t("common.minutes", "phút")}`
@@ -317,7 +332,7 @@ export function QuizEditor({
             </div>
 
             {/* Pass Score - circular */}
-            <div className="space-y-1">
+            <div className="space-y-4 rounded-xl border border-slate-200 bg-white px-4 py-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
               <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                 {t("adminCodingProblem.minimumPassingScore")}
               </Label>
@@ -329,7 +344,7 @@ export function QuizEditor({
                   step={1}
                   accent="emerald"
                   variant="circular"
-                  size="sm"
+                  size="md"
                   onChange={(val) => {
                     onPassThresholdChange(maxScore > 0 ? Math.round((val / maxScore) * 100) : 80);
                   }}
@@ -339,10 +354,8 @@ export function QuizEditor({
           </div>
 
           {/* --- Divider --- */}
-          <div className="border-t border-slate-100 dark:border-slate-800/60" />
-
           {/* --- Questions Navigation --- */}
-          <div className="space-y-2.5">
+          <div className="space-y-4 border-t border-slate-200 pt-8 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <h4 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
                 {t("adminQuizProblem.questionWithParen")}
@@ -361,7 +374,7 @@ export function QuizEditor({
               disabled={disabled}
               onClick={openBank}
               className={cn(
-                "h-7 w-full justify-start border-slate-200 text-[11px] font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900",
+                "h-9 w-full justify-start rounded-[10px] border-slate-200 text-xs font-semibold hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30",
                 rightView === "bank" &&
                   "border-indigo-500 bg-indigo-50/50 text-indigo-600 dark:border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400"
               )}>
@@ -369,38 +382,63 @@ export function QuizEditor({
               {t("adminQuizProblem.questionBank")}
             </Button>
 
-            {/* Question Number Boxes Grid */}
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
               {questions.map((q, idx) => {
                 const isActive =
                   selectedIndex === idx && (rightView === "view" || rightView === "edit");
-                const hasCode = (q.questionText || "").includes("```");
+                const difficulty = q.questionLevel;
                 return (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSelectQuestion(idx)}
                     className={cn(
-                      "group relative flex h-10 w-10 items-center justify-center rounded-lg border text-xs font-bold transition-all",
+                      "group flex min-h-12 w-full min-w-0 items-center gap-2.5 rounded-[10px] border px-3 py-2 text-left transition-all",
                       isActive
-                        ? "border-indigo-500 bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400"
+                        ? "border-indigo-500 bg-indigo-50 shadow-sm dark:border-indigo-500 dark:bg-indigo-950/30"
+                        : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/20"
                     )}>
-                    {idx + 1}
-                    {hasCode && (
-                      <div className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    <span
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                        isActive
+                          ? "bg-indigo-600 text-white"
+                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      )}>
+                      {idx + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                      {q.questionText || `${t("adminQuizProblem.questionNumber")}${idx + 1}`}
+                    </span>
+                    {difficulty && (
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-semibold",
+                          difficulty === "EASY" &&
+                            "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
+                          difficulty === "MEDIUM" &&
+                            "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400",
+                          difficulty === "HARD" &&
+                            "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400"
+                        )}>
+                        {difficulty === "EASY"
+                          ? t("common.difficultyEasy")
+                          : difficulty === "MEDIUM"
+                            ? t("common.difficultyMedium")
+                            : t("common.difficultyHard")}
+                      </span>
                     )}
                   </button>
                 );
               })}
 
-              {/* Add Button */}
               {!disabled && (
                 <button
                   type="button"
                   onClick={handleAddNew}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-dashed border-slate-200 text-slate-400 transition-all hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 dark:border-slate-800 dark:hover:border-emerald-600 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400">
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-[10px] border border-dashed border-slate-300 text-xs font-semibold text-slate-500 transition-all hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-emerald-600 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400">
                   <Plus className="h-4 w-4" />
+                  {t("adminQuestionbankmanagement.addQuestion")}
                 </button>
               )}
             </div>
@@ -417,8 +455,17 @@ export function QuizEditor({
       </div>
 
       {/* ==================== RIGHT COLUMN ==================== */}
-      <div className="col-span-8 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-5">
+      <div className="flex min-h-[420px] min-w-0 flex-col overflow-hidden md:min-h-0">
+        <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+          <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+            {t("general.detailedConfiguration")}
+          </h4>
+        </div>
+        <div
+          className={cn(
+            "flex-1",
+            rightView === "bank" ? "min-h-0 overflow-hidden" : "overflow-y-auto py-6 pr-7 pl-6"
+          )}>
           {/* --- IDLE STATE --- */}
           {rightView === "idle" && (
             <div className="flex h-full flex-col items-center justify-center text-center">
@@ -666,14 +713,14 @@ export function QuizEditor({
 
           {/* --- BANK STATE: Question Bank Browser --- */}
           {rightView === "bank" && (
-            <div className="space-y-4">
+            <div className="flex h-full min-h-0 flex-col bg-white dark:bg-slate-900">
               {/* Header */}
-              <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3 dark:border-slate-800/60">
+              <div className="flex h-12 shrink-0 items-center gap-2.5 border-b border-slate-200 px-6 dark:border-slate-700">
                 <FolderOpen className="h-4 w-4 text-indigo-500" />
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {t("adminQuizProblem.questionBank")}
                 </h3>
-                <span className="ml-auto text-xs font-medium text-slate-400">
+                <span className="ml-auto rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
                   {t("common.selected")}{" "}
                   <strong className="text-indigo-600 dark:text-indigo-400">
                     {selectedBankIndexes.length}
@@ -681,27 +728,21 @@ export function QuizEditor({
                 </span>
               </div>
 
-              {/* Filters: search + category + level in a clean 2-row layout */}
-              <div className="space-y-3 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                {/* Search row */}
-                <div className="relative">
-                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    value={bankSearch}
-                    onChange={(e) => setBankSearch(e.target.value)}
-                    placeholder={t("adminQuizProblem.searchQuestion", "Tìm câu hỏi...")}
-                    className="h-10 w-full border-slate-200 bg-white pl-10 text-sm dark:border-slate-800 dark:bg-slate-950"
-                  />
-                </div>
-
-                {/* Category + Level in two clearly-labelled rows */}
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                      {t("general.category", "Danh mục")}
-                    </Label>
+              <div className="shrink-0 border-b border-slate-200 bg-slate-50/70 px-6 py-3 dark:border-slate-700 dark:bg-slate-950/35">
+                <div className="flex gap-2.5">
+                  <div className="relative min-w-0 flex-1">
+                    <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      value={bankSearch}
+                      onChange={(e) => setBankSearch(e.target.value)}
+                      placeholder={t("adminQuizProblem.searchQuestion", "Tìm câu hỏi...")}
+                      className="h-9 w-full rounded-[10px] border-slate-200 bg-white pl-10 text-sm dark:border-slate-700 dark:bg-slate-950"
+                    />
+                  </div>
+                  <div className="w-48 shrink-0">
+                    <Label className="sr-only">{t("general.category", "Danh mục")}</Label>
                     <Select value={bankCategory} onValueChange={(val) => setBankCategory(val)}>
-                      <SelectTrigger className="h-10 w-full border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950">
+                      <SelectTrigger className="h-9 w-full rounded-[10px] border-slate-200 bg-white text-sm dark:border-slate-700 dark:bg-slate-950">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
@@ -713,38 +754,9 @@ export function QuizEditor({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                      {t("general.difficulty", "Mức độ")}
-                    </Label>
-                    <Select
-                      value={bankLevel}
-                      onValueChange={(val) => setBankLevel(val as LevelFilter)}>
-                      <SelectTrigger className="h-10 w-full border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="border-slate-200 bg-white text-xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                        {LEVEL_FILTERS.map(({ key }) => (
-                          <SelectItem key={key} value={key}>
-                            {key === "All"
-                              ? t("common.all", "Tất cả")
-                              : key === "EASY"
-                                ? t("common.difficultyEasy", "Dễ")
-                                : key === "MEDIUM"
-                                  ? t("common.difficultyMedium", "Trung bình")
-                                  : t("common.difficultyHard", "Khó")}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
-                {/* Compact pill row for quick visual scan (optional, but matches Admin filter UX) */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-                    {t("common.quickFilter", "Lọc nhanh")}:
-                  </span>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {LEVEL_FILTERS.map(({ key }) => {
                     const isActive = bankLevel === key;
                     const levelColor =
@@ -777,7 +789,7 @@ export function QuizEditor({
                         type="button"
                         onClick={() => setBankLevel(key)}
                         className={cn(
-                          "rounded-full border px-3 py-1 text-[10px] font-bold transition-all",
+                          "h-7 rounded-full border px-3 text-[10px] font-semibold transition-all",
                           levelColor
                         )}>
                         {label}
@@ -794,113 +806,120 @@ export function QuizEditor({
                 </div>
               </div>
 
-              {/* Questions list */}
-              {isLoadingBank ? (
-                <div className="flex h-48 items-center justify-center">
-                  <SpinnerBlock size="sm" />
-                </div>
-              ) : (
-                <div className="max-h-[420px] space-y-2.5 overflow-y-auto pr-1">
-                  {filteredBank.map((q, idx) => {
-                    const originalIndex = bankQuestions.findIndex((bq) => bq === q);
-                    const isSelected = selectedBankIndexes.includes(originalIndex);
-                    const qText = q.questionText || "";
-                    const categoryName =
-                      q.questionCategory?.name ?? q.questionCategory?.categoryName;
-                    const difficultyLabel =
-                      q.questionLevel === "EASY"
-                        ? t("common.difficultyEasy")
-                        : q.questionLevel === "MEDIUM"
-                          ? t("common.difficultyMedium")
-                          : q.questionLevel === "HARD"
-                            ? t("common.difficultyHard")
-                            : q.questionLevel;
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-3">
+                {isLoadingBank ? (
+                  <div className="flex h-48 items-center justify-center">
+                    <SpinnerBlock size="sm" />
+                  </div>
+                ) : (
+                  <div className="space-y-3 pr-1">
+                    {filteredBank.map((q, idx) => {
+                      const originalIndex = bankQuestions.findIndex((bq) => bq === q);
+                      const isSelected = selectedBankIndexes.includes(originalIndex);
+                      const qText = q.questionText || "";
+                      const categoryName =
+                        q.questionCategory?.name ?? q.questionCategory?.categoryName;
+                      const difficultyLabel =
+                        q.questionLevel === "EASY"
+                          ? t("common.difficultyEasy")
+                          : q.questionLevel === "MEDIUM"
+                            ? t("common.difficultyMedium")
+                            : q.questionLevel === "HARD"
+                              ? t("common.difficultyHard")
+                              : q.questionLevel;
 
-                    return (
-                      <div
-                        key={q.id ?? idx}
-                        onClick={() => toggleBankSelection(originalIndex)}
-                        className={cn(
-                          "flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-all",
-                          isSelected
-                            ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
-                            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
-                        )}>
-                        <div className="mt-0.5">
-                          <div
-                            className={cn(
-                              "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                              isSelected
-                                ? "border-indigo-600 bg-indigo-600 text-white"
-                                : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
-                            )}>
-                            {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                      return (
+                        <div
+                          key={q.id ?? idx}
+                          onClick={() => toggleBankSelection(originalIndex)}
+                          className={cn(
+                            "flex cursor-pointer items-start gap-3 rounded-[10px] border p-3.5 transition-all",
+                            isSelected
+                              ? "border-indigo-500 bg-indigo-500/[0.04] dark:bg-indigo-950/15"
+                              : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/20 dark:hover:border-slate-700"
+                          )}>
+                          <div className="mt-0.5">
+                            <div
+                              className={cn(
+                                "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                                isSelected
+                                  ? "border-indigo-600 bg-indigo-600 text-white"
+                                  : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950"
+                              )}>
+                              {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {categoryName && (
+                                <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
+                                  {categoryName}
+                                </span>
+                              )}
+                              {difficultyLabel && (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold ring-1 ring-inset",
+                                    q.questionLevel === "EASY" &&
+                                      "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
+                                    q.questionLevel === "MEDIUM" &&
+                                      "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
+                                    q.questionLevel === "HARD" &&
+                                      "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-red-400"
+                                  )}>
+                                  {difficultyLabel}
+                                </span>
+                              )}
+                              <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                                10 {t("common.score")}
+                              </span>
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-5 font-medium text-slate-700 dark:text-slate-200">
+                              {qText.length > 160 ? qText.substring(0, 160) + "..." : qText}
+                            </p>
                           </div>
                         </div>
-                        <div className="min-w-0 flex-1 space-y-1.5">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {categoryName && (
-                              <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-indigo-600/10 ring-inset dark:bg-indigo-950/30 dark:text-indigo-400">
-                                {categoryName}
-                              </span>
-                            )}
-                            {difficultyLabel && (
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold ring-1 ring-inset",
-                                  q.questionLevel === "EASY" &&
-                                    "bg-green-50 text-green-700 ring-green-600/10 dark:bg-green-950/20 dark:text-green-400",
-                                  q.questionLevel === "MEDIUM" &&
-                                    "bg-amber-50 text-amber-700 ring-amber-600/10 dark:bg-amber-950/20 dark:text-amber-400",
-                                  q.questionLevel === "HARD" &&
-                                    "bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-950/20 dark:text-red-400"
-                                )}>
-                                {difficultyLabel}
-                              </span>
-                            )}
-                            <span className="ml-auto text-[10px] font-semibold text-slate-400">
-                              10 {t("common.score")}
-                            </span>
-                          </div>
-                          <p className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 font-mono text-[13px] leading-relaxed font-semibold whitespace-pre-wrap dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200">
-                            {qText.length > 160 ? qText.substring(0, 160) + "..." : qText}
-                          </p>
-                        </div>
+                      );
+                    })}
+
+                    {filteredBank.length === 0 && (
+                      <div className="py-10 text-center text-xs text-slate-500">
+                        {t("adminQuizProblem.noMatchingQuestion")}
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
+                )}
+              </div>
 
-                  {filteredBank.length === 0 && (
-                    <div className="py-10 text-center text-xs text-slate-500">
-                      {t("adminQuizProblem.noMatchingQuestion")}
-                    </div>
-                  )}
+              <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-t border-slate-200 bg-slate-100/80 px-6 dark:border-slate-700 dark:bg-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {selectedBankIndexes.length > 0
+                    ? `${selectedBankIndexes.length} ${t("common.selected").toLowerCase()}`
+                    : t("adminQuizProblem.selectQuestionToViewDetails")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setRightView("idle");
+                      setSelectedIndex(null);
+                    }}
+                    className="h-9 rounded-[10px] border-slate-300 bg-white px-4 text-xs dark:border-slate-700 dark:bg-slate-950">
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={selectedBankIndexes.length === 0}
+                    onClick={addSelectedFromBank}
+                    className="h-9 min-w-44 rounded-[10px] bg-indigo-600 px-4 text-xs font-semibold text-white hover:bg-indigo-700">
+                    {t("common.add")}
+                    {selectedBankIndexes.length > 0 ? ` (${selectedBankIndexes.length})` : ""}{" "}
+                    {t("adminQuizProblem.intoRound")}
+                  </Button>
                 </div>
-              )}
-
-              {/* Footer */}
-              <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-3 dark:border-slate-800/60">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setRightView("idle");
-                    setSelectedIndex(null);
-                  }}
-                  className="h-8 border-slate-200 text-xs dark:border-slate-800">
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={selectedBankIndexes.length === 0}
-                  onClick={addSelectedFromBank}
-                  className="h-8 bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
-                  {t("common.add")}
-                  {selectedBankIndexes.length > 0 ? ` (${selectedBankIndexes.length})` : ""}{" "}
-                  {t("adminQuizProblem.intoRound")}
-                </Button>
               </div>
             </div>
           )}

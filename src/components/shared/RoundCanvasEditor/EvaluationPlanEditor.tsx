@@ -199,7 +199,7 @@ export function EvaluationPlanEditor({
   );
 
   return (
-    <section className="min-w-0 space-y-4 border-t border-slate-200 pt-5 dark:border-slate-800">
+    <section className="min-w-0 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -258,29 +258,38 @@ export function EvaluationPlanEditor({
           </p>
         </div>
       ) : (
-        <div className="min-w-0 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-          <Table className="min-w-[760px] table-fixed">
+        <div className="min-w-0 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+          <Table className="w-[920px] min-w-full table-fixed">
+            <colgroup>
+              <col className="w-[180px]" />
+              <col />
+              <col className="w-[96px]" />
+              <col className="w-[84px]" />
+              <col className="w-[84px]" />
+              <col className="w-[92px]" />
+              <col className="w-[88px]" />
+            </colgroup>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-28 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableHead className="text-xs font-semibold whitespace-normal text-slate-500 dark:text-slate-400">
                   {t("roundAi.metricCodeShort", "Code")}
                 </TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   {t("roundAi.metricNameShort", "Tên tiêu chí")}
                 </TableHead>
-                <TableHead className="w-24 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableHead className="text-right text-xs font-semibold whitespace-normal text-slate-500 dark:text-slate-400">
                   {t("roundAi.weightShort", "Weight")}
                 </TableHead>
-                <TableHead className="w-20 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableHead className="text-right text-xs font-semibold whitespace-normal text-slate-500 dark:text-slate-400">
                   {t("roundAi.maxScoreShort", "Max")}
                 </TableHead>
-                <TableHead className="w-20 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableHead className="text-right text-xs font-semibold whitespace-normal text-slate-500 dark:text-slate-400">
                   {t("roundAi.minimumScoreShort", "Min")}
                 </TableHead>
-                <TableHead className="w-20 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <TableHead className="text-xs font-semibold whitespace-normal text-slate-500 dark:text-slate-400">
                   {t("roundAi.requiredShort", "Required")}
                 </TableHead>
-                <TableHead className="w-20" />
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -298,7 +307,10 @@ export function EvaluationPlanEditor({
                       )}
                       onClick={() => !isEditing && toggleEdit(index)}>
                       <TableCell
-                        className={cn("py-2.5 align-top", isEditing && "whitespace-normal")}
+                        className={cn(
+                          "min-w-0 overflow-hidden py-2.5 align-top",
+                          isEditing && "whitespace-normal"
+                        )}
                         onClick={(event) => isEditing && event.stopPropagation()}>
                         {isEditing ? (
                           <>
@@ -332,8 +344,10 @@ export function EvaluationPlanEditor({
                         ) : metric.code ? (
                           <Badge
                             variant="outline"
-                            className="border-slate-200 bg-slate-50 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-                            {metric.code}
+                            className="flex max-w-full min-w-0 border-slate-200 bg-slate-50 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                            <span className="block min-w-0 truncate" title={metric.code}>
+                              {metric.code}
+                            </span>
                           </Badge>
                         ) : (
                           <span className="text-[11px] text-slate-400 italic dark:text-slate-500">
@@ -377,7 +391,7 @@ export function EvaluationPlanEditor({
                           </>
                         ) : (
                           <span
-                            className="block truncate text-xs font-medium text-slate-700 dark:text-slate-200"
+                            className="line-clamp-2 block text-xs leading-5 font-medium break-words text-slate-700 dark:text-slate-200"
                             title={metric.name}>
                             {metric.name ||
                               t("roundAi.metricNumber", "Tiêu chí {{number}}", {

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CodeReviewEditor } from "@/components/ui/code-review-editor";
 import { CodingEditor } from "@/components/ui/coding-editor";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { QuizEditor } from "@/components/ui/quiz-editor";
@@ -39,6 +39,7 @@ import {
   Trash2,
   Users,
   Wand2,
+  X,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -257,6 +258,7 @@ export function RoundCanvasEditorWorkspace({
   const [selectedRoundIndex, setSelectedRoundIndex] = useState<number | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [configView, setConfigView] = useState<"setup" | "evaluation">("setup");
+  const [isRoundSubflowActive, setIsRoundSubflowActive] = useState(false);
   const [validationAttemptedRoundIndex, setValidationAttemptedRoundIndex] = useState<number | null>(
     null
   );
@@ -1343,25 +1345,32 @@ export function RoundCanvasEditorWorkspace({
             if (!open) {
               setSelectedRoundIndex(null);
               setValidationAttemptedRoundIndex(null);
+              setIsRoundSubflowActive(false);
             }
           }}>
           <DialogContent
             showCloseButton={false}
             onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
-              "flex flex-col gap-0 overflow-hidden border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950",
-              configView === "evaluation" ||
-                selectedRound?.roundType === "QUIZ" ||
-                selectedRound?.roundType === "CODING" ||
-                selectedRound?.roundType === "CODE_REVIEW"
-                ? "h-[96vh] max-h-[96vh] w-[98vw] max-w-[98vw]"
-                : "h-auto max-h-[85vh] w-[960px] max-w-[96vw]"
+              "flex w-[95vw] flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-[0_20px_40px_rgba(15,23,42,0.12)] md:w-[95vw] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_40px_rgba(0,0,0,0.4)]",
+              configView === "setup"
+                ? "h-[min(88dvh,860px)] max-w-[1200px]"
+                : "h-[min(85dvh,820px)] max-w-[1100px]"
             )}>
-            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/30">
-              <div className="flex min-w-0 items-center gap-2.5">
+            <DialogTitle className="sr-only">
+              {t("userApplicationhistory.round")} {selectedRoundIndex + 1}: {selectedRound.name}
+            </DialogTitle>
+            <div
+              className={cn(
+                "relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-white px-4 sm:px-7 dark:bg-slate-900",
+                configView === "setup"
+                  ? "min-h-[52px] border-slate-300 py-1.5 shadow-[0_1px_0_rgba(15,23,42,0.04)] dark:border-slate-600"
+                  : "min-h-16 border-slate-200 py-3 dark:border-slate-700"
+              )}>
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div
                   className={cn(
-                    "rounded-lg p-1.5",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
                     AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === selectedRound.roundType)
                       ?.bgColor,
                     AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === selectedRound.roundType)
@@ -1369,36 +1378,36 @@ export function RoundCanvasEditorWorkspace({
                   )}>
                   {AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === selectedRound.roundType)?.icon}
                 </div>
-                <div>
-                  <div className="flex items-center gap-1 text-sm font-bold text-slate-900 dark:text-slate-100">
-                    <span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-50">
+                    <span className="shrink-0">
                       {t("userApplicationhistory.round")} {selectedRoundIndex + 1}:
                     </span>
                     <input
                       type="text"
                       value={selectedRound.name || ""}
                       onChange={(e) => updateRoundField(selectedRoundIndex, "name", e.target.value)}
-                      className="-ml-1 w-48 rounded border-b border-transparent bg-transparent px-1 py-0.5 font-bold text-slate-900 hover:border-slate-300 focus:border-indigo-500 focus:outline-none dark:text-slate-100"
+                      className="min-w-0 flex-1 truncate rounded-md border border-transparent bg-transparent px-1.5 py-0.5 font-semibold text-slate-900 transition-colors hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:outline-none dark:text-slate-50 dark:hover:border-slate-600 dark:focus:bg-slate-950"
                       placeholder={t("adminCompanymanagement.recruitmentRoundName")}
                     />
+                    <span className="hidden shrink-0 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500 sm:inline-flex dark:bg-slate-800 dark:text-slate-300">
+                      {
+                        AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === selectedRound.roundType)
+                          ?.title
+                      }
+                    </span>
                   </div>
-                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                    {
-                      AVAILABLE_ROUNDS_TEMPLATES.find((t) => t.type === selectedRound.roundType)
-                        ?.title
-                    }
-                  </p>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <div className="flex rounded-md bg-slate-200/80 p-0.5 dark:bg-slate-800">
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                <div className="flex rounded-lg border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
                   <button
                     type="button"
                     onClick={() => setConfigView("setup")}
                     className={cn(
-                      "h-7 rounded px-2.5 text-[11px] font-semibold transition-colors",
+                      "h-7 rounded-md px-2.5 text-[11px] font-semibold transition-all duration-200",
                       configView === "setup"
-                        ? "bg-white text-slate-900 shadow-xs dark:bg-slate-950 dark:text-slate-100"
+                        ? "bg-white text-indigo-700 shadow-sm dark:bg-slate-950 dark:text-indigo-300"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
                     )}>
                     {t("roundAi.roundSetup", "Cấu hình vòng")}
@@ -1407,7 +1416,7 @@ export function RoundCanvasEditorWorkspace({
                     type="button"
                     onClick={handleOpenEvaluationView}
                     className={cn(
-                      "h-7 rounded px-2.5 text-[11px] font-semibold transition-colors",
+                      "h-7 rounded-md px-2.5 text-[11px] font-semibold transition-all duration-200",
                       configView === "evaluation"
                         ? "bg-white text-indigo-700 shadow-xs dark:bg-slate-950 dark:text-indigo-300"
                         : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
@@ -1420,83 +1429,30 @@ export function RoundCanvasEditorWorkspace({
                     )}
                   </button>
                 </div>
-                {/* Reviewer (Staff) — surfaced inside the round detail dialog for
-                    round types whose body is taken over by a specialized editor
-                    (CODE_REVIEW) so admins can still pick a reviewer here
-                    without leaving the round configuration. Hidden for QUIZ
-                    (auto-graded), CODING (system-graded), MENTOR_REVIEW
-                    (handled by the mentor system), and when no staff users
-                    are available. */}
-                {staffUsers &&
-                  staffUsers.length > 0 &&
-                  selectedRound.roundType === "CODE_REVIEW" && (
-                    <div className="flex items-center gap-1.5">
-                      <Label className="text-[10px] font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-                        {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
-                      </Label>
-                      <Select
-                        value={
-                          selectedRound.reviewerId != null
-                            ? String(selectedRound.reviewerId)
-                            : "__none__"
-                        }
-                        onValueChange={(val) =>
-                          updateRoundField(
-                            selectedRoundIndex,
-                            "reviewerId",
-                            val === "__none__" ? null : Number(val)
-                          )
-                        }>
-                        <SelectTrigger className="h-8 w-48 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
-                          <SelectValue
-                            placeholder={t(
-                              "adminCompanymanagement.reviewerStaffPlaceholder",
-                              "— Chưa gán người chấm —"
-                            )}
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-                          <SelectItem value="__none__">
-                            {t(
-                              "adminCompanymanagement.reviewerStaffUnassigned",
-                              "Chưa gán người chấm"
-                            )}
-                          </SelectItem>
-                          {staffUsers.map((s) => (
-                            <SelectItem key={s.id} value={String(s.id)}>
-                              {s.name ?? `User #${s.id}`}
-                              {s.email ? ` (${s.email})` : ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
                 <Button
+                  aria-label={t("compUi.close")}
+                  title={t("compUi.close")}
                   variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full px-3 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   onClick={() => {
                     setConfigModalOpen(false);
                     setSelectedRoundIndex(null);
                   }}>
-                  {t("compUi.close")}
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
             <div
               className={cn(
-                "flex-1 overflow-hidden",
+                "min-h-0 flex-1",
                 configView === "evaluation"
                   ? "overflow-y-auto"
-                  : selectedRound.roundType !== "QUIZ" &&
-                      selectedRound.roundType !== "CODING" &&
-                      selectedRound.roundType !== "CODE_REVIEW" &&
-                      "overflow-y-auto"
+                  : "overflow-y-auto md:overflow-hidden"
               )}>
               {configView === "evaluation" ? (
-                <div className="mx-auto w-full max-w-5xl overflow-y-auto p-6">
+                <div className="mx-auto w-full max-w-[1040px] p-4 sm:p-6">
                   <EvaluationPlanEditor
                     key={selectedRoundIndex}
                     value={selectedRound.configData?.evaluationPlan}
@@ -1524,6 +1480,7 @@ export function RoundCanvasEditorWorkspace({
                   onTimeLimitMinutesChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
                   }
+                  onSubflowChange={setIsRoundSubflowActive}
                 />
               ) : selectedRound.roundType === "CODING" ? (
                 <CodingEditor
@@ -1554,6 +1511,7 @@ export function RoundCanvasEditorWorkspace({
                   onTimeLimitMinutesChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
                   }
+                  onSubflowChange={setIsRoundSubflowActive}
                 />
               ) : selectedRound.roundType === "CODE_REVIEW" ? (
                 <CodeReviewEditor
@@ -1584,16 +1542,73 @@ export function RoundCanvasEditorWorkspace({
                   onTimeLimitMinutesChange={(v) =>
                     updateRoundConfigField(selectedRoundIndex, "timeLimitMinutes", v)
                   }
+                  reviewerControl={
+                    staffUsers && staffUsers.length > 0 ? (
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                          {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
+                        </Label>
+                        <Select
+                          value={
+                            selectedRound.reviewerId != null
+                              ? String(selectedRound.reviewerId)
+                              : "__none__"
+                          }
+                          onValueChange={(val) =>
+                            updateRoundField(
+                              selectedRoundIndex,
+                              "reviewerId",
+                              val === "__none__" ? null : Number(val)
+                            )
+                          }>
+                          <SelectTrigger
+                            className="h-[42px] w-full rounded-[10px] border-slate-300 bg-white text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                            title={
+                              selectedRound.reviewerId != null
+                                ? (() => {
+                                    const reviewer = staffUsers.find(
+                                      (staff) => staff.id === selectedRound.reviewerId
+                                    );
+                                    return reviewer
+                                      ? `${reviewer.name ?? `User #${reviewer.id}`}${reviewer.email ? ` (${reviewer.email})` : ""}`
+                                      : undefined;
+                                  })()
+                                : t(
+                                    "adminCompanymanagement.reviewerStaffUnassigned",
+                                    "Chưa gán người chấm"
+                                  )
+                            }>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="border-slate-200 bg-white text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                            <SelectItem value="__none__">
+                              {t(
+                                "adminCompanymanagement.reviewerStaffUnassigned",
+                                "Chưa gán người chấm"
+                              )}
+                            </SelectItem>
+                            {staffUsers.map((staff) => (
+                              <SelectItem key={staff.id} value={String(staff.id)}>
+                                {staff.name ?? `User #${staff.id}`}
+                                {staff.email ? ` (${staff.email})` : ""}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : null
+                  }
+                  onSubflowChange={setIsRoundSubflowActive}
                 />
               ) : (
-                <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-12">
-                  <div className="space-y-5 lg:col-span-5">
-                    <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
-                      <h4 className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                <div className="grid min-h-full grid-cols-1 min-[1100px]:grid-cols-[360px_minmax(0,1fr)] md:h-full md:min-h-0 md:grid-cols-[300px_minmax(0,1fr)]">
+                  <div className="space-y-8 border-b border-slate-200 bg-slate-50/70 py-6 pr-5 pl-7 md:min-h-0 md:overflow-y-auto md:border-r md:border-b-0 dark:border-slate-600 dark:bg-slate-950/45">
+                    <div className="border-b border-slate-200 pb-3 dark:border-slate-700">
+                      <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                         {t("general.generalConfiguration")}
                       </h4>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-8">
                       {/* Reviewer (STAFF) — required for non-auto rounds so the
                           application detail lands in some staff's grading queue.
                           Hidden for CODING (system-graded) and MENTOR_REVIEW
@@ -1603,8 +1618,8 @@ export function RoundCanvasEditorWorkspace({
                         !["CODING", "MENTOR_REVIEW", "MENTROR_REVIEW"].includes(
                           selectedRound.roundType as string
                         ) && (
-                          <div className="space-y-1.5">
-                            <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                               {t("adminCompanymanagement.reviewerStaff", "Reviewer (Staff)")}
                             </Label>
                             <Select
@@ -1620,7 +1635,18 @@ export function RoundCanvasEditorWorkspace({
                                   val === "__none__" ? null : Number(val)
                                 )
                               }>
-                              <SelectTrigger className="h-9 border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+                              <SelectTrigger
+                                className="h-[42px] w-full rounded-[10px] border-slate-300 bg-white text-sm text-slate-900 transition-colors focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                                title={
+                                  selectedRound.reviewerId != null
+                                    ? staffUsers.find(
+                                        (staff) => staff.id === selectedRound.reviewerId
+                                      )?.name
+                                    : t(
+                                        "adminCompanymanagement.reviewerStaffUnassigned",
+                                        "Chưa gán người chấm"
+                                      )
+                                }>
                                 <SelectValue
                                   placeholder={t(
                                     "adminCompanymanagement.reviewerStaffPlaceholder",
@@ -1653,16 +1679,16 @@ export function RoundCanvasEditorWorkspace({
                             )}
                           </div>
                         )}
-                      <div className="flex items-start gap-4">
+                      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
                         <div
                           className={cn(
-                            "space-y-1",
+                            "space-y-2",
                             selectedRound.roundType === "CV_SCREENING" ||
                               selectedRound.roundType === "EMAIL_SIMULATOR"
-                              ? "w-full"
-                              : "w-[55%]"
+                              ? "sm:col-span-2 md:col-span-1 lg:col-span-2"
+                              : ""
                           )}>
-                          <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                          <Label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                             {t("adminCompanymanagement.maximumScore")}
                           </Label>
                           <ScoreInput
@@ -1672,6 +1698,7 @@ export function RoundCanvasEditorWorkspace({
                             step={5}
                             accent="indigo"
                             variant="simple"
+                            className="[&>div]:h-[42px] [&>div]:rounded-[10px]"
                             onChange={(v) =>
                               updateRoundConfigField(selectedRoundIndex, "maxScore", v)
                             }
@@ -1679,8 +1706,8 @@ export function RoundCanvasEditorWorkspace({
                         </div>
                         {selectedRound.roundType !== "CV_SCREENING" &&
                           selectedRound.roundType !== "EMAIL_SIMULATOR" && (
-                            <div className="w-[45%] space-y-1">
-                              <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                                 {t("common.time")}
                               </Label>
                               {dialogEditingTime ? (
@@ -1710,7 +1737,7 @@ export function RoundCanvasEditorWorkspace({
                                     onKeyDown={(e) =>
                                       e.key === "Enter" && setDialogEditingTime(false)
                                     }
-                                    className="h-11 w-full [appearance:textfield] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-800 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    className="h-[42px] w-full [appearance:textfield] rounded-[10px] border-slate-200 bg-white text-center text-xs font-bold dark:border-slate-700 dark:bg-slate-950 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                   />
                                   <span className="shrink-0 text-[9px] text-slate-400">
                                     {selectedRound.roundType === "MENTROR_REVIEW" ||
@@ -1723,7 +1750,7 @@ export function RoundCanvasEditorWorkspace({
                                 <button
                                   type="button"
                                   onClick={() => setDialogEditingTime(true)}
-                                  className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400">
+                                  className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-[10px] border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-600 transition-all hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-300">
                                   <Clock className="h-4 w-4 text-slate-400" />
                                   {(selectedRound.configData?.timeLimitMinutes ?? 0) > 0
                                     ? selectedRound.roundType === "MENTROR_REVIEW" ||
@@ -1736,8 +1763,8 @@ export function RoundCanvasEditorWorkspace({
                             </div>
                           )}
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                      <div className="my-2 space-y-4 rounded-xl border border-slate-200 bg-white px-4 py-6 shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+                        <Label className="block text-center text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                           {t("adminCompanymanagement.minimumPassingScore")}
                         </Label>
                         <div className="flex justify-center">
@@ -1751,7 +1778,7 @@ export function RoundCanvasEditorWorkspace({
                             step={1}
                             accent="emerald"
                             variant="circular"
-                            size="sm"
+                            size="md"
                             onChange={(val) => {
                               const max = selectedRound.configData?.maxScore ?? 100;
                               updateRoundField(
@@ -1780,8 +1807,8 @@ export function RoundCanvasEditorWorkspace({
                         </div>
                       )}
                     </div>
-                    <div className="space-y-1.5 border-t border-slate-100 pt-4 dark:border-slate-800/40">
-                      <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <div className="space-y-2 border-t border-slate-200 pt-5 dark:border-slate-700">
+                      <Label className="text-sm font-medium text-slate-700 dark:text-slate-200">
                         {t("adminCompanymanagement.instructionsForCandidates")}
                       </Label>
                       <Textarea
@@ -1796,14 +1823,14 @@ export function RoundCanvasEditorWorkspace({
                               ? t("template.exampleCustomerService")
                               : t("adminCompanymanagement.instructionsForCandidatesPlaceholder")
                         }
-                        rows={4}
-                        className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        rows={6}
+                        className="min-h-40 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
-                  <div className="space-y-5 lg:col-span-7 lg:border-l lg:border-slate-200 lg:pl-6 lg:dark:border-slate-800">
-                    <div className="border-b border-slate-100 pb-2 dark:border-slate-800/40">
-                      <h4 className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                  <div className="min-w-0 space-y-8 bg-white py-6 pr-7 pl-6 md:min-h-0 md:overflow-y-auto dark:bg-slate-900">
+                    <div className="border-b border-slate-200 pb-3 dark:border-slate-700">
+                      <h4 className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                         {t("general.detailedConfiguration")}
                       </h4>
                     </div>
@@ -1823,8 +1850,8 @@ export function RoundCanvasEditorWorkspace({
                               )
                             }
                             placeholder={t("template.exampleHrCriteria")}
-                            rows={6}
-                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                            rows={8}
+                            className="min-h-52 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-950 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                           />
                           <p className="text-[10px] leading-normal text-slate-500">
                             {t("template.addonCriteriaExplanation")}
@@ -1848,8 +1875,8 @@ export function RoundCanvasEditorWorkspace({
                               )
                             }
                             placeholder={t("template.exampleEmailScenario")}
-                            rows={6}
-                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                            rows={8}
+                            className="min-h-52 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-950 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -1866,8 +1893,8 @@ export function RoundCanvasEditorWorkspace({
                               )
                             }
                             placeholder={t("template.exampleEmailCriteria")}
-                            rows={6}
-                            className="border-slate-200 bg-white text-xs text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                            rows={8}
+                            className="min-h-52 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-950 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                           />
                           <p className="text-[10px] leading-normal text-slate-500">
                             {t("template.addonCriteriaExplanation")}
@@ -1891,8 +1918,8 @@ export function RoundCanvasEditorWorkspace({
                               )
                             }
                             placeholder={t("adminCompanymanagement.provideAiRoleConfigPrompt")}
-                            rows={5}
-                            className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                            rows={7}
+                            className="min-h-48 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                           />
                         </div>
                         <div className="mt-4 space-y-1.5">
@@ -1911,8 +1938,8 @@ export function RoundCanvasEditorWorkspace({
                             placeholder={t(
                               "adminCompanymanagement.candidateEvaluationCriteriaPlaceholder"
                             )}
-                            rows={4}
-                            className="border-slate-200 bg-white text-xs text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                            rows={7}
+                            className="min-h-48 resize-y rounded-lg border-slate-300 bg-white text-sm leading-relaxed text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                           />
                         </div>
                       </div>
@@ -1922,66 +1949,84 @@ export function RoundCanvasEditorWorkspace({
               )}
             </div>
 
-            <div className="flex shrink-0 justify-end gap-3 border-t border-slate-200 bg-white px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50">
-              <Button
-                type="button"
-                className="h-9 bg-indigo-600 px-4 text-xs font-bold text-white shadow-md hover:bg-indigo-700"
-                onClick={async () => {
-                  let finalRounds = rounds;
-                  if (selectedRound?.roundType === "CODING" && codingEditorRef.current) {
-                    const result = await codingEditorRef.current.saveCurrentProblem();
-                    if (!result) return;
-                    if (result !== true) {
-                      const updated = [...rounds];
-                      updated[selectedRoundIndex] = {
-                        ...updated[selectedRoundIndex],
-                        configData: {
-                          ...updated[selectedRoundIndex].configData,
-                          codingProblemsId: result.ids,
-                          codingProblems: result.problems,
-                        },
-                      };
-                      finalRounds = updated;
-                      setRounds(updated);
+            {!(configView === "setup" && isRoundSubflowActive) && (
+              <div
+                className={cn(
+                  "relative z-10 flex shrink-0 items-center justify-end gap-3 border-t px-4 sm:px-7",
+                  configView === "setup"
+                    ? "min-h-[58px] border-slate-300 bg-slate-100/80 py-2 shadow-[0_-1px_0_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-900"
+                    : "min-h-16 border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-slate-900"
+                )}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-9 rounded-[10px] px-4 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  onClick={() => {
+                    setConfigModalOpen(false);
+                    setSelectedRoundIndex(null);
+                  }}>
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  type="button"
+                  className="h-9 min-w-[220px] rounded-[10px] bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                  onClick={async () => {
+                    let finalRounds = rounds;
+                    if (selectedRound?.roundType === "CODING" && codingEditorRef.current) {
+                      const result = await codingEditorRef.current.saveCurrentProblem();
+                      if (!result) return;
+                      if (result !== true) {
+                        const updated = [...rounds];
+                        updated[selectedRoundIndex] = {
+                          ...updated[selectedRoundIndex],
+                          configData: {
+                            ...updated[selectedRoundIndex].configData,
+                            codingProblemsId: result.ids,
+                            codingProblems: result.problems,
+                          },
+                        };
+                        finalRounds = updated;
+                        setRounds(updated);
+                      }
+                    } else if (
+                      selectedRound?.roundType === "CODE_REVIEW" &&
+                      codeReviewEditorRef.current
+                    ) {
+                      const result = await codeReviewEditorRef.current.saveCurrentProblem();
+                      if (!result) return;
+                      if (result !== true) {
+                        const updated = [...rounds];
+                        updated[selectedRoundIndex] = {
+                          ...updated[selectedRoundIndex],
+                          configData: {
+                            ...updated[selectedRoundIndex].configData,
+                            codeReviewProblemsId: result.ids,
+                            codeReviewProblems: result.problems,
+                          },
+                        };
+                        finalRounds = updated;
+                        setRounds(updated);
+                      }
                     }
-                  } else if (
-                    selectedRound?.roundType === "CODE_REVIEW" &&
-                    codeReviewEditorRef.current
-                  ) {
-                    const result = await codeReviewEditorRef.current.saveCurrentProblem();
-                    if (!result) return;
-                    if (result !== true) {
-                      const updated = [...rounds];
-                      updated[selectedRoundIndex] = {
-                        ...updated[selectedRoundIndex],
-                        configData: {
-                          ...updated[selectedRoundIndex].configData,
-                          codeReviewProblemsId: result.ids,
-                          codeReviewProblems: result.problems,
-                        },
-                      };
-                      finalRounds = updated;
-                      setRounds(updated);
+                    setConfigModalOpen(false);
+                    setSelectedRoundIndex(null);
+                    // In create mode the template row doesn't exist on the
+                    // server yet, so per-round "save" only commits the round's
+                    // config to the local draft and closes the dialog. Calling
+                    // onSave here would fire createTemplate() a second time and
+                    // produce duplicate rows when the user later presses the
+                    // toolbar's full-template save.
+                    if (mode === "create") {
+                      return;
                     }
-                  }
-                  setConfigModalOpen(false);
-                  setSelectedRoundIndex(null);
-                  // In create mode the template row doesn't exist on the
-                  // server yet, so per-round "save" only commits the round's
-                  // config to the local draft and closes the dialog. Calling
-                  // onSave here would fire createTemplate() a second time and
-                  // produce duplicate rows when the user later presses the
-                  // toolbar's full-template save.
-                  if (mode === "create") {
-                    return;
-                  }
-                  await handleSaveWrapper(false, finalRounds);
-                }}>
-                {mode === "create"
-                  ? t("template.applyToDraft", "Apply to draft")
-                  : `${t("template.saveTemplate")} ${t("userApplicationhistory.rounds")}`}
-              </Button>
-            </div>
+                    await handleSaveWrapper(false, finalRounds);
+                  }}>
+                  {mode === "create"
+                    ? t("template.applyToDraft", "Apply to draft")
+                    : `${t("template.saveTemplate")} ${t("userApplicationhistory.rounds")}`}
+                </Button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}
