@@ -30,8 +30,8 @@ describe("email submission operations", () => {
       "processEmailSchedule"
     );
     expect(mockPost.mock.calls).toEqual([
-      ["/api/email-submissions/fetch"],
-      ["/api/email-submissions/process-pending"],
+      ["/api/email-submissions/fetch", { parseAs: "text" }],
+      ["/api/email-submissions/process-pending", { parseAs: "text" }],
     ]);
   });
 });

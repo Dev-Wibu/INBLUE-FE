@@ -62,7 +62,7 @@ export function EmailQueueActions() {
         type="button"
         size="sm"
         className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-700"
-        disabled={busy || (data.length > 0 && pendingCount + errorCount === 0)}
+        disabled={busy}
         onClick={runProcess}>
         {processPending.isPending ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />

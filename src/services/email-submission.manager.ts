@@ -24,7 +24,9 @@ export const emailSubmissionManager = {
 
   async fetchMailbox(): Promise<string> {
     try {
-      const response = await fetchClient.POST("/api/email-submissions/fetch");
+      const response = await fetchClient.POST("/api/email-submissions/fetch", {
+        parseAs: "text",
+      });
       return typeof response.data === "string" ? response.data : "Đã yêu cầu quét hộp thư.";
     } catch (error) {
       throw new Error(errorMessage(error));
@@ -33,7 +35,9 @@ export const emailSubmissionManager = {
 
   async processPending(): Promise<string> {
     try {
-      const response = await fetchClient.POST("/api/email-submissions/process-pending");
+      const response = await fetchClient.POST("/api/email-submissions/process-pending", {
+        parseAs: "text",
+      });
       return typeof response.data === "string" ? response.data : "Đã yêu cầu xử lý hàng đợi email.";
     } catch (error) {
       throw new Error(errorMessage(error));
