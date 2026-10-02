@@ -1076,8 +1076,8 @@ export function RoundCanvasEditorWorkspace({
             <div
               ref={scrollContainerRef}
               className={cn(
-                "relative h-full w-full overflow-auto select-none",
-                isPanning ? "cursor-grabbing" : "cursor-grab"
+                "round-canvas-drag-surface relative h-full w-full overflow-auto select-none",
+                isPanning && "is-panning"
               )}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleCanvasDrop}
@@ -1186,16 +1186,15 @@ export function RoundCanvasEditorWorkspace({
                               top: pos.y,
                               width: 208,
                               zIndex: isMovingThis ? 50 : isSelected ? 10 : 1,
-                              cursor: isMovingThis ? "grabbing" : "grab",
                               userSelect: "none",
                               touchAction: "none",
                             }}
                             className={cn(
-                              "round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
+                              "round-canvas-round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
                               isSelected
                                 ? "border-blue-400 shadow-xl ring-2 ring-blue-400/30 dark:border-blue-500"
                                 : "border-slate-200 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:hover:border-slate-600",
-                              isMovingThis ? "shadow-2xl" : ""
+                              isMovingThis ? "is-moving shadow-2xl" : ""
                             )}
                             onPointerDown={(e) => handleCardPointerDown(e, idx)}
                             onPointerMove={(e) => handleCardPointerMove(e, idx)}
@@ -1352,20 +1351,14 @@ export function RoundCanvasEditorWorkspace({
             showCloseButton={false}
             onOpenAutoFocus={(e) => e.preventDefault()}
             className={cn(
-              "flex w-[95vw] flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-[0_20px_40px_rgba(15,23,42,0.12)] md:w-[95vw] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_40px_rgba(0,0,0,0.4)]",
-              configView === "setup"
-                ? "h-[min(88dvh,860px)] max-w-[1200px]"
-                : "h-[min(85dvh,820px)] max-w-[1100px]"
+              "flex h-[min(88dvh,860px)] max-h-[calc(100dvh-2rem)] w-[95vw] flex-col gap-0 overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-[0_20px_40px_rgba(15,23,42,0.12)] md:w-[95vw] md:max-w-[1200px] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
             )}>
             <DialogTitle className="sr-only">
               {t("userApplicationhistory.round")} {selectedRoundIndex + 1}: {selectedRound.name}
             </DialogTitle>
             <div
               className={cn(
-                "relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-white px-4 sm:px-7 dark:bg-slate-900",
-                configView === "setup"
-                  ? "min-h-[52px] border-slate-300 py-1.5 shadow-[0_1px_0_rgba(15,23,42,0.04)] dark:border-slate-600"
-                  : "min-h-16 border-slate-200 py-3 dark:border-slate-700"
+                "relative z-10 flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] sm:px-7 dark:border-slate-700 dark:bg-slate-900"
               )}>
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div
@@ -1952,10 +1945,7 @@ export function RoundCanvasEditorWorkspace({
             {!(configView === "setup" && isRoundSubflowActive) && (
               <div
                 className={cn(
-                  "relative z-10 flex shrink-0 items-center justify-end gap-3 border-t px-4 sm:px-7",
-                  configView === "setup"
-                    ? "min-h-[58px] border-slate-300 bg-slate-100/80 py-2 shadow-[0_-1px_0_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-900"
-                    : "min-h-16 border-slate-200 bg-white py-3 dark:border-slate-700 dark:bg-slate-900"
+                  "relative z-10 flex min-h-16 shrink-0 items-center justify-end gap-3 border-t border-slate-200 bg-white px-4 py-3 sm:px-7 dark:border-slate-700 dark:bg-slate-900"
                 )}>
                 <Button
                   type="button"

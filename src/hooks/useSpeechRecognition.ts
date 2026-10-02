@@ -1,4 +1,8 @@
 import i18n from "@/lib/i18n";
+import {
+  startRealtimeTranscription,
+  type RealtimeTranscriptionHandle,
+} from "@/services/kiosk/realtimeTranscription";
 import { useCallback, useEffect, useRef, useState } from "react";
 const t = i18n.t.bind(i18n);
 
@@ -40,32 +44,41 @@ export interface UseSpeechRecognitionReturn {
 export interface UseSpeechRecognitionOptions {
   reminderIntervalMs?: number;
   onReminder?: (_elapsedMs: number) => void;
+  /** Use the backend PCM/WebSocket recognizer instead of browser-only speech recognition. */
+  realtime?: boolean;
 }
 
 // onFinalTranscript được gọi trực tiếp trong native event handler — không qua useEffect
 export function useSpeechRecognition(
   lang = "vi-VN",
-  onFinalTranscript?: (text: string) => void,
+  onFinalTranscript?: (_text: string) => void,
   options?: UseSpeechRecognitionOptions
 ): UseSpeechRecognitionReturn {
   const reminderIntervalMs = options?.reminderIntervalMs ?? 5 * 60 * 1000;
+  const useRealtime = options?.realtime === true;
   const SpeechRecognitionAPI =
     typeof window !== "undefined"
       ? (window.SpeechRecognition ?? window.webkitSpeechRecognition)
       : undefined;
-  const isSupported = !!SpeechRecognitionAPI;
+  const isSupported =
+    !!SpeechRecognitionAPI ||
+    (useRealtime &&
+      typeof window !== "undefined" &&
+      !!window.WebSocket &&
+      !!navigator.mediaDevices?.getUserMedia);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
   // Dùng ref để giữ callback mới nhất — cập nhật qua effect tránh mutate ref trong render
-  const onFinalTranscriptRef = useRef<((text: string) => void) | undefined>(onFinalTranscript);
-  const onReminderRef = useRef<((elapsedMs: number) => void) | undefined>(options?.onReminder);
+  const onFinalTranscriptRef = useRef<((_text: string) => void) | undefined>(onFinalTranscript);
+  const onReminderRef = useRef<((_elapsedMs: number) => void) | undefined>(options?.onReminder);
   const shouldKeepListeningRef = useRef(false);
   const stopRequestedRef = useRef(false);
   const restartTimeoutRef = useRef<number | null>(null);
   const reminderTimeoutRef = useRef<number | null>(null);
   const listeningStartedAtRef = useRef<number | null>(null);
+  const realtimeHandleRef = useRef<RealtimeTranscriptionHandle | null>(null);
   useEffect(() => {
     onFinalTranscriptRef.current = onFinalTranscript;
   }, [onFinalTranscript]);
@@ -201,31 +214,124 @@ export function useSpeechRecognition(
       shouldKeepListeningRef.current = false;
       clearRestartTimeout();
       clearReminderTimeout();
+      if (realtimeHandleRef.current) {
+        void realtimeHandleRef.current.stop();
+        realtimeHandleRef.current = null;
+      }
       recognition.abort();
       recognitionRef.current = null;
     };
-  }, [SpeechRecognitionAPI, clearReminderTimeout, clearRestartTimeout, lang, scheduleRestart, t]);
+  }, [
+    SpeechRecognitionAPI,
+    clearReminderTimeout,
+    clearRestartTimeout,
+    lang,
+    scheduleRestart,
+    useRealtime,
+  ]);
+  useEffect(() => {
+    if (!useRealtime) return;
+    return () => {
+      stopRequestedRef.current = true;
+      shouldKeepListeningRef.current = false;
+      clearReminderTimeout();
+      if (realtimeHandleRef.current) {
+        void realtimeHandleRef.current.stop();
+        realtimeHandleRef.current = null;
+      }
+    };
+  }, [clearReminderTimeout, useRealtime]);
   const startListening = useCallback(() => {
-    if (!recognitionRef.current || isListening) return;
+    if (isListening || (!recognitionRef.current && !useRealtime)) return;
     setError(null);
     stopRequestedRef.current = false;
     shouldKeepListeningRef.current = true;
     listeningStartedAtRef.current = Date.now();
     scheduleReminder();
+    if (useRealtime) {
+      setIsListening(true);
+      void startRealtimeTranscription("", {
+        onReady: () => {
+          setIsListening(true);
+          setError(null);
+        },
+        onTranscript: (text, isFinal) => {
+          setInterimTranscript(text);
+          if (isFinal) {
+            setInterimTranscript("");
+          }
+        },
+        onError: (realtimeError) => {
+          setError(realtimeError.message);
+          shouldKeepListeningRef.current = false;
+          stopRequestedRef.current = true;
+          clearReminderTimeout();
+          setIsListening(false);
+        },
+        onClose: () => {
+          realtimeHandleRef.current = null;
+          if (!shouldKeepListeningRef.current) {
+            setIsListening(false);
+          }
+        },
+      })
+        .then((handle) => {
+          if (stopRequestedRef.current || !shouldKeepListeningRef.current) {
+            void handle.stop();
+            return;
+          }
+          realtimeHandleRef.current = handle;
+          setIsListening(true);
+        })
+        .catch((realtimeError: unknown) => {
+          if (!shouldKeepListeningRef.current) return;
+          const browserRecognition = recognitionRef.current;
+          if (browserRecognition) {
+            setError(null);
+            try {
+              browserRecognition.start();
+              return;
+            } catch {
+              // Continue with the visible realtime error when browser recognition also fails.
+            }
+          }
+          shouldKeepListeningRef.current = false;
+          stopRequestedRef.current = true;
+          clearReminderTimeout();
+          setIsListening(false);
+          setError(
+            realtimeError instanceof Error
+              ? realtimeError.message
+              : t("general.speechRecognitionError", { var_0: "realtime" })
+          );
+        });
+      return;
+    }
     try {
-      recognitionRef.current.start();
+      const recognition = recognitionRef.current;
+      if (!recognition) return;
+      recognition.start();
     } catch {
       // Bỏ qua lỗi nếu recognition đang chạy (InvalidStateError)
     }
-  }, [isListening, scheduleReminder]);
+  }, [clearReminderTimeout, isListening, scheduleReminder, useRealtime]);
   const stopListening = useCallback(() => {
-    if (!recognitionRef.current || stopRequestedRef.current || !shouldKeepListeningRef.current) {
+    if (stopRequestedRef.current || !shouldKeepListeningRef.current) {
       return;
     }
     stopRequestedRef.current = true;
     shouldKeepListeningRef.current = false;
     clearRestartTimeout();
     clearReminderTimeout();
+    if (realtimeHandleRef.current) {
+      const handle = realtimeHandleRef.current;
+      realtimeHandleRef.current = null;
+      void handle.stop();
+      setIsListening(false);
+      setInterimTranscript("");
+      return;
+    }
+    if (!recognitionRef.current) return;
     try {
       recognitionRef.current.stop();
     } catch {
