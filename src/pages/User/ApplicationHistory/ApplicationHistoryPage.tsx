@@ -57,6 +57,18 @@ type RoundType =
 
 type ApplicationStatus = "IN_PROGRESS" | "PASSED" | "FAILED" | "SOFT_FAILED";
 
+const isApplicationActive = (application: Application): boolean =>
+  application.status === "IN_PROGRESS" || application.status === "SOFT_FAILED";
+
+const matchesApplicationSearch = (application: EnrichedApplication, query: string): boolean => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+  return (
+    application.jobTitle?.toLowerCase().includes(normalizedQuery) === true ||
+    application.companyName?.toLowerCase().includes(normalizedQuery) === true
+  );
+};
+
 interface JdRound {
   id?: number;
   name?: string;
@@ -627,30 +639,25 @@ export function ApplicationHistoryPage() {
     });
   }, [apps, jdMap]);
 
-  // Active Applications (In Progress)
+  // Active Applications: IN_PROGRESS and SOFT_FAILED both still require candidate action.
   const activeApplications = useMemo(() => {
-    return enrichedApplications.filter((a) => a.status === "IN_PROGRESS");
-  }, [enrichedApplications]);
+    return enrichedApplications.filter(
+      (application) =>
+        isApplicationActive(application) &&
+        (statusFilter === "all" || application.status === statusFilter) &&
+        matchesApplicationSearch(application, searchQuery)
+    );
+  }, [enrichedApplications, searchQuery, statusFilter]);
 
-  // Completed / Other Applications
+  // Completed Applications: only PASSED and FAILED are truly finished.
   const completedApplications = useMemo(() => {
-    let items = enrichedApplications;
-    if (statusFilter !== "all") {
-      items = items.filter((app) => app.status === statusFilter);
-    } else {
-      // By default show all non-in-progress if active section is present
-      items = items.filter((app) => app.status !== "IN_PROGRESS");
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter(
-        (app) =>
-          app.jobTitle?.toLowerCase().includes(q) || app.companyName?.toLowerCase().includes(q)
-      );
-    }
-    return items;
-  }, [enrichedApplications, statusFilter, searchQuery]);
+    return enrichedApplications.filter(
+      (application) =>
+        !isApplicationActive(application) &&
+        (statusFilter === "all" || application.status === statusFilter) &&
+        matchesApplicationSearch(application, searchQuery)
+    );
+  }, [enrichedApplications, searchQuery, statusFilter]);
 
   return (
     <div className="w-full space-y-8 px-5 py-6 pb-16 md:px-8">

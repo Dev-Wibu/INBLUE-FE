@@ -211,6 +211,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
     {
       reminderIntervalMs: 5 * 60 * 1000,
       onReminder: handleSpeechListeningReminder,
+      realtime: true,
     }
   );
   const {
@@ -290,8 +291,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
   const messagesRef = useRef<ChatMessage[]>([]);
   const chatInputValueRef = useRef(chatInputValue);
   const interimTranscriptRef = useRef(interimTranscript);
-  const pendingInterimForAutoSendRef = useRef("");
-  const shouldAutoSendAfterStopRef = useRef(false);
 
   // Lấy trạng thái Redis của phiên đang chạy — nguồn dữ liệu duy nhất cho:
   // 1. Lấy dbId (numeric session ID) cho navigate đến trang kết quả
@@ -679,7 +678,7 @@ export function useAIInterviewSession(isSessionActivated = false) {
     [handleSendAnswer]
   );
 
-  // Nhấn mic lần 2 sẽ dừng nhận dạng và tự gửi transcript
+  // Nhấn mic lần 2 dừng nhận dạng và giữ transcript trong composer để người dùng xem/sửa.
   const canUseSpeechInput =
     isSpeechRecognitionSupported &&
     hasStarted &&
@@ -691,16 +690,16 @@ export function useAIInterviewSession(isSessionActivated = false) {
       return;
     }
     if (isListening) {
-      pendingInterimForAutoSendRef.current = interimTranscriptRef.current;
-      shouldAutoSendAfterStopRef.current = true;
+      const draft = resolveAutoSendDraft(chatInputValueRef.current, interimTranscriptRef.current);
+      if (draft) {
+        setChatInputValue(draft);
+      }
       stopListening();
       return;
     }
     if (!canUseSpeechInput) {
       return;
     }
-    shouldAutoSendAfterStopRef.current = false;
-    pendingInterimForAutoSendRef.current = "";
     startListening();
   }, [canUseSpeechInput, isListening, isSpeechRecognitionSupported, startListening, stopListening]);
   const handleDeviceCheckConfirmed = useCallback(() => {
@@ -718,8 +717,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
       return;
     }
     setShouldAutoStartMicAfterDeviceCheck(false);
-    shouldAutoSendAfterStopRef.current = false;
-    pendingInterimForAutoSendRef.current = "";
     startListening();
   }, [
     canUseSpeechInput,
@@ -730,22 +727,6 @@ export function useAIInterviewSession(isSessionActivated = false) {
     shouldAutoStartMicAfterDeviceCheck,
     startListening,
   ]);
-  useEffect(() => {
-    if (isListening || !shouldAutoSendAfterStopRef.current) {
-      return;
-    }
-    shouldAutoSendAfterStopRef.current = false;
-    const finalDraft = resolveAutoSendDraft(
-      chatInputValueRef.current,
-      pendingInterimForAutoSendRef.current
-    );
-    pendingInterimForAutoSendRef.current = "";
-    if (!finalDraft) {
-      return;
-    }
-    setChatInputValue("");
-    void handleSendAnswer(finalDraft);
-  }, [handleSendAnswer, isListening]);
   const canSwitchSpeechLanguage = !isListening && !isSubmitting && !isEvaluating;
   const shouldWarnSpeechFallback =
     speechLanguage === "vi-VN" && hasPreferredLanguageVoice === false;
