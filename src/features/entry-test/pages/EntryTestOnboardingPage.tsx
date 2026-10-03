@@ -1,6 +1,15 @@
 import icon2 from "@/assets/icon2.svg";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,11 +25,12 @@ import {
   Compass,
   Flag,
   Languages,
+  Loader2,
   Target,
 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -31,6 +41,7 @@ import {
 import {
   useCareerPreference,
   useCareerPreferenceExists,
+  useSkipCareerPreference,
   useUpsertCareerPreference,
 } from "../hooks/useCareerPreference";
 import type { TargetLevel, TargetRole } from "../types/entry-test.types";
@@ -46,11 +57,14 @@ const steps = [
 export function EntryTestOnboardingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const userId = Number(useAuthStore((state) => state.user?.id));
   const exists = useCareerPreferenceExists(Number.isSafeInteger(userId));
   const preference = useCareerPreference(exists.data === true);
   const save = useUpsertCareerPreference();
+  const skip = useSkipCareerPreference();
   const [step, setStep] = useState(0);
+  const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
   const [role, setRole] = useState<TargetRole | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
   const [otherLanguages, setOtherLanguages] = useState("");
@@ -59,6 +73,13 @@ export function EntryTestOnboardingPage() {
   const [goal, setGoal] = useState("");
   const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
   const selectedSkills = normalizeCareerLanguages([...skills, ...otherLanguages.split(",")]);
+  const requestedReturnPath = (location.state as { from?: unknown } | null)?.from;
+  const returnPath =
+    typeof requestedReturnPath === "string" &&
+    requestedReturnPath.startsWith("/user") &&
+    requestedReturnPath !== "/user/entry-test/onboarding"
+      ? requestedReturnPath
+      : "/user";
 
   if (exists.data === true && preference.isLoading) return <OnboardingLoading />;
   if (exists.data === true && preference.data?.targetRole) {
@@ -83,6 +104,15 @@ export function EntryTestOnboardingPage() {
       navigate("/user/entry-test", { replace: true, state: { openStartDialog: true } });
     } catch {
       toast.error(t("entryTestOnboarding.saveError"));
+    }
+  };
+  const deferSetup = async () => {
+    try {
+      await skip.mutateAsync();
+      setSkipConfirmOpen(false);
+      navigate(returnPath, { replace: true });
+    } catch {
+      toast.error(t("entryTestOnboarding.skipError"));
     }
   };
 
@@ -350,26 +380,37 @@ export function EntryTestOnboardingPage() {
               </Step>
             )}
           </div>
-          <footer className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:px-8 lg:px-10 dark:border-slate-700 dark:bg-slate-900">
-            <Button
-              variant="ghost"
-              className="rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
-              onClick={() => step > 0 && setStep((value) => value - 1)}
-              disabled={step === 0}>
-              <ArrowLeft className="h-4 w-4" /> {t("entryTestOnboarding.back")}
-            </Button>
+          <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:px-8 lg:px-10 dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex flex-wrap items-center gap-1">
+              <Button
+                variant="ghost"
+                className="min-h-11 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                onClick={() => setSkipConfirmOpen(true)}
+                disabled={save.isPending || skip.isPending}>
+                {t("entryTestOnboarding.later")}
+              </Button>
+              {step > 0 && (
+                <Button
+                  variant="ghost"
+                  className="min-h-11 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+                  onClick={() => setStep((value) => value - 1)}
+                  disabled={save.isPending || skip.isPending}>
+                  <ArrowLeft className="h-4 w-4" /> {t("entryTestOnboarding.back")}
+                </Button>
+              )}
+            </div>
             {step < 3 ? (
               <Button
                 className="h-11 rounded-xl bg-indigo-600 px-6 font-semibold shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
                 onClick={() => setStep((value) => value + 1)}
-                disabled={!canContinue}>
+                disabled={!canContinue || skip.isPending}>
                 {t("entryTestOnboarding.next")} <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
               <Button
                 className="h-11 rounded-xl bg-indigo-600 px-6 font-semibold shadow-sm shadow-indigo-500/20 hover:bg-indigo-700"
                 onClick={finish}
-                disabled={save.isPending}>
+                disabled={save.isPending || skip.isPending}>
                 {save.isPending ? t("entryTestOnboarding.saving") : t("entryTestOnboarding.finish")}{" "}
                 <Check className="h-4 w-4" />
               </Button>
@@ -377,6 +418,35 @@ export function EntryTestOnboardingPage() {
           </footer>
         </div>
       </section>
+      <AlertDialog
+        open={skipConfirmOpen}
+        onOpenChange={(open) => !skip.isPending && setSkipConfirmOpen(open)}>
+        <AlertDialogContent className="border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-900 dark:text-slate-100">
+              {t("entryTestOnboarding.skipConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="leading-6 text-slate-600 dark:text-slate-400">
+              {t("entryTestOnboarding.skipConfirmDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={skip.isPending}>
+              {t("entryTestOnboarding.continueSetup")}
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              className="bg-indigo-600 text-white hover:bg-indigo-700"
+              onClick={deferSetup}
+              disabled={skip.isPending}>
+              {skip.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {skip.isPending
+                ? t("entryTestOnboarding.skipping")
+                : t("entryTestOnboarding.confirmSkip")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }

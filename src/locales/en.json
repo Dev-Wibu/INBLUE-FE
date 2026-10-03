@@ -8655,6 +8655,7 @@
     "targetLevel": "Target level",
     "changeNotice": "Changing your direction or skills may require another assessment to update your competency profile.",
     "later": "Later",
+    "cancel": "Cancel",
     "save": "Save direction"
   },
   "entryTestProfile": {
@@ -8765,9 +8766,16 @@
     "reviewDescription": "You are about to complete your learning profile setup.",
     "back": "Back",
     "next": "Continue",
+    "later": "Set up later",
     "finish": "Complete setup",
     "saving": "Saving...",
     "saveError": "We could not save your direction. Please try again.",
+    "skipConfirmTitle": "Set up your direction later?",
+    "skipConfirmDescription": "You can continue using the platform. Personalized job recommendations and the career assessment will become available after you add this information.",
+    "continueSetup": "Continue setup",
+    "confirmSkip": "Set up later",
+    "skipping": "Processing...",
+    "skipError": "We could not defer setup. Please try again.",
     "loading": "Preparing your learning profile...",
     "roleLabels": {
       "FE": "Frontend",
