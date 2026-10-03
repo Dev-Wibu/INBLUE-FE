@@ -1,3 +1,4 @@
+import { EmailQueueActions } from "@/components/shared/EmailQueueActions";
 import {
   MetricCodeBadge,
   MetricEvidence,
@@ -429,6 +430,12 @@ export function EmailSimulatorModule({
           )}
         </div>
       </div>
+
+      {!isStaffView && isCurrent && !isCompleted && phase.kind !== "EMAIL_RECEIVED" && (
+        <div className="flex justify-end border-b border-slate-200 pb-4 dark:border-slate-800">
+          <EmailQueueActions showQueueCount={false} onActionComplete={onSuccess} />
+        </div>
+      )}
 
       {phase.kind === "DRAFT" && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
