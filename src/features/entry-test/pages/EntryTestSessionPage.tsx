@@ -15,7 +15,7 @@ import {
   Play,
   Send,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -252,11 +252,29 @@ export function EntryTestSessionPage() {
     document.addEventListener("mouseup", onUp);
   };
 
+  const navigationButtons = (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        onClick={() => setCurrent(currentIndex - 1)}
+        disabled={currentIndex === 0}>
+        <ArrowLeft className="h-4 w-4" /> {t("entryTestSession.previous")}
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() => setCurrent(currentIndex + 1)}
+        disabled={currentIndex === items.length - 1}>
+        {t("entryTestSession.next")} <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
   const renderCurrentItem = (pane: "all" | "problem" | "code" = "all") =>
     current.kind === "quiz" ? (
       <div className="h-full overflow-y-auto">
         <QuizPanel
           question={current.data}
+          navigation={navigationButtons}
           value={draft.quizDrafts[current.data.itemId]}
           onChange={(selectedOption) =>
             setDraft((value) =>
@@ -418,20 +436,7 @@ export function EntryTestSessionPage() {
         <span className="text-xs text-slate-500">
           {t("entryTestSession.answeredCount", { answered: answeredCount, total: items.length })}
         </span>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrent(currentIndex - 1)}
-            disabled={currentIndex === 0}>
-            <ArrowLeft className="h-4 w-4" /> {t("entryTestSession.previous")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrent(currentIndex + 1)}
-            disabled={currentIndex === items.length - 1}>
-            {t("entryTestSession.next")} <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+        {current.kind !== "quiz" && navigationButtons}
       </footer>
       <SubmitConfirmDialog
         open={submitOpen}
@@ -548,10 +553,12 @@ function QuizPanel({
   question,
   value,
   onChange,
+  navigation,
 }: {
   question: EntryTestQuestion;
   value?: string;
   onChange: (_value: string) => void;
+  navigation?: ReactNode;
 }) {
   const { t } = useTranslation();
 
@@ -593,6 +600,7 @@ function QuizPanel({
           );
         })}
       </div>
+      {navigation && <div className="mt-6 flex justify-end">{navigation}</div>}
     </div>
   );
 }
