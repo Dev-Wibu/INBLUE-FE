@@ -69,6 +69,28 @@ describe("KioskAIInterviewRoomPage", () => {
     });
   });
 
+  it("wraps long answers and keeps the latest text in view", async () => {
+    render(
+      <KioskAIInterviewRoomPage
+        sessionKey="long-answer-session"
+        experienceMode="web"
+        initialStartResponse={{ questionContent: "Câu hỏi hiện tại" }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "CHỈNH SỬA" }));
+    const input = screen.getByRole("textbox", { name: "Câu trả lời của bạn" });
+    Object.defineProperty(input, "scrollHeight", { configurable: true, value: 240 });
+
+    fireEvent.change(input, { target: { value: "a".repeat(500) } });
+
+    await waitFor(() => {
+      expect(input.tagName).toBe("TEXTAREA");
+      expect(input).toHaveStyle({ overflowWrap: "anywhere", wordBreak: "break-word" });
+      expect(input.scrollTop).toBe(240);
+    });
+  });
+
   it("shows the redesigned evaluation state after the final answer", async () => {
     mocks.submit.mockResolvedValue({ finished: true });
     render(
