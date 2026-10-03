@@ -431,7 +431,7 @@ export function EmailSimulatorModule({
         </div>
       </div>
 
-      {!isStaffView && isCurrent && !isCompleted && phase.kind !== "EMAIL_RECEIVED" && (
+      {!isStaffView && (
         <div className="flex justify-end border-b border-slate-200 pb-4 dark:border-slate-800">
           <EmailQueueActions showQueueCount={false} onActionComplete={onSuccess} />
         </div>
