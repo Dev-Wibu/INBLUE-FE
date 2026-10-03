@@ -17,9 +17,13 @@ export function MandatoryEntryTestGuard() {
   const incomplete =
     exists.data === false ||
     (exists.data === true &&
-      (!preference.data?.targetRole ||
-        (preference.isError && (preference.error as { status?: number })?.status === 404)));
+      preference.isError &&
+      (preference.error as { status?: number })?.status === 404);
   return incomplete ? (
-    <Navigate to={onboardingPath} replace state={{ from: location.pathname }} />
+    <Navigate
+      to={onboardingPath}
+      replace
+      state={{ from: `${location.pathname}${location.search}${location.hash}` }}
+    />
   ) : null;
 }

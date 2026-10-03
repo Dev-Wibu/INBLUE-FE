@@ -8654,6 +8654,7 @@
     "targetLevel": "目標レベル",
     "changeNotice": "方向性やスキルを変更すると、能力プロフィールを更新するため再評価が必要になる場合があります。",
     "later": "後で",
+    "cancel": "キャンセル",
     "save": "方向性を保存"
   },
   "entryTestProfile": {
@@ -8753,9 +8754,16 @@
     "reviewDescription": "学習プロフィールの設定を完了します。",
     "back": "戻る",
     "next": "続ける",
+    "later": "後で設定",
     "finish": "設定を完了",
     "saving": "保存中...",
     "saveError": "方向性を保存できませんでした。もう一度お試しください。",
+    "skipConfirmTitle": "方向性を後で設定しますか？",
+    "skipConfirmDescription": "引き続きシステムを利用できます。パーソナライズされた求人提案とキャリア評価は、この情報を追加した後に利用できるようになります。",
+    "continueSetup": "設定を続ける",
+    "confirmSkip": "後で設定",
+    "skipping": "処理中...",
+    "skipError": "設定を延期できませんでした。もう一度お試しください。",
     "loading": "学習プロフィールを準備しています...",
     "roleLabels": {
       "FE": "Frontend",

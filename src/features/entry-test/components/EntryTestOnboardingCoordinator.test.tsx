@@ -40,10 +40,10 @@ describe("EntryTestOnboardingCoordinator", () => {
     expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
   });
 
-  it("opens onboarding when the backend has an empty preference record", () => {
+  it("does not interrupt users who deferred setup with an empty preference record", () => {
     mocks.exists.mockReturnValue(true);
     mocks.preference.mockReturnValue({ targetRole: null });
     render(<EntryTestOnboardingCoordinator />);
-    expect(screen.getByTestId("redirect")).toHaveTextContent("/user/entry-test/onboarding");
+    expect(screen.queryByTestId("redirect")).not.toBeInTheDocument();
   });
 });
