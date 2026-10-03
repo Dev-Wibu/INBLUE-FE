@@ -282,7 +282,9 @@ export function KioskAIInterviewRoomPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isFinished, setIsFinished] = useState(initialStartResponse?.finished === true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(
+    () => typeof window === "undefined" || window.innerWidth >= 768
+  );
   const [isTranscriptEditing, setIsTranscriptEditing] = useState(false);
 
   // Audio wave levels
@@ -304,12 +306,23 @@ export function KioskAIInterviewRoomPage({
   const micAudioContextRef = useRef<AudioContext | null>(null);
   const micAnimFrameRef = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
+  const transcriptInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Scroll chat messages
   useEffect(() => {
     const scroller = messagesEndRef.current?.parentElement;
     if (scroller) scroller.scrollTop = scroller.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    const scrollToLatestTranscript = (element: HTMLElement | null) => {
+      if (element) element.scrollTop = element.scrollHeight;
+    };
+
+    scrollToLatestTranscript(transcriptScrollRef.current);
+    scrollToLatestTranscript(transcriptInputRef.current);
+  }, [isTranscriptEditing, liveTranscript]);
 
   // Real-time Clock
   useEffect(() => {
@@ -630,9 +643,9 @@ export function KioskAIInterviewRoomPage({
 
   return (
     <div
+      className="h-dvh"
       style={{
         width: "100vw",
-        height: "100vh",
         backgroundColor: "#050A1A",
         display: "flex",
         flexDirection: "column",
@@ -647,16 +660,14 @@ export function KioskAIInterviewRoomPage({
 
       {/* ── TOP HEADER (Exact 1:1 Mobile Match) ── */}
       <div
+        className="h-14 px-3 sm:h-16 sm:px-5 lg:px-10 xl:pr-12"
         style={{
-          height: 64,
           flexShrink: 0,
           backgroundColor: "rgba(5, 10, 26, 0.72)",
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingLeft: 40,
-          paddingRight: 48,
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           zIndex: 30,
@@ -664,10 +675,17 @@ export function KioskAIInterviewRoomPage({
         }}>
         {/* Left: Brand + KIOSK MODE BADGE */}
         <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <span style={{ color: "#98CBFF", fontSize: 34, fontWeight: 900, letterSpacing: 0 }}>
+          <span
+            style={{
+              color: "#98CBFF",
+              fontSize: "clamp(20px, 4vw, 34px)",
+              fontWeight: 900,
+              letterSpacing: 0,
+            }}>
             INBLUE
           </span>
           <div
+            className="hidden sm:block"
             style={{
               backgroundColor: "rgba(152, 203, 255, 0.1)",
               border: "1px solid rgba(152, 203, 255, 0.22)",
@@ -681,11 +699,11 @@ export function KioskAIInterviewRoomPage({
         </div>
 
         {/* Right Controls (Exact 1:1 Mobile Match) */}
-        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14 }}>
+        <div className="flex flex-row items-center gap-2 sm:gap-3.5">
           {/* Live Badge */}
           <div
+            className="hidden items-center sm:flex"
             style={{
-              display: "flex",
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
@@ -700,8 +718,8 @@ export function KioskAIInterviewRoomPage({
 
           {/* Clock Box */}
           <div
+            className="hidden items-center md:flex"
             style={{
-              display: "flex",
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
@@ -741,33 +759,23 @@ export function KioskAIInterviewRoomPage({
               cursor: "pointer",
             }}>
             <LineIcon name={isDrawerOpen ? "hide" : "history"} size={15} color="#CBD5E1" />
-            <span>{isDrawerOpen ? "Ẩn lịch sử" : "Lịch sử trao đổi"}</span>
+            <span className="hidden sm:inline">
+              {isDrawerOpen ? "Ẩn lịch sử" : "Lịch sử trao đổi"}
+            </span>
           </button>
         </div>
       </div>
 
       {/* ── MAIN WORKSPACE (Exact 1:1 Mobile Match) ── */}
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "row",
-          overflow: "hidden",
-          padding: "0 40px",
-          gap: 22,
-        }}>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 sm:px-5 md:flex-row md:gap-4 lg:px-10">
         {/* Stage Area */}
         <div
+          className="min-h-0 flex-1 justify-start overflow-y-auto py-2 md:justify-center"
           style={{
-            flex: 1,
-            minHeight: 0,
             height: "100%",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
             position: "relative",
-            padding: "8px 0",
             backgroundColor: "rgba(2, 8, 23, 0.1)",
           }}>
           {isFinished ? (
@@ -844,6 +852,7 @@ export function KioskAIInterviewRoomPage({
             </div>
           ) : (
             <div
+              className="justify-start md:justify-center"
               style={{
                 flex: 1,
                 minHeight: 0,
@@ -853,7 +862,6 @@ export function KioskAIInterviewRoomPage({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
                 gap: 12,
                 paddingBottom: 6,
               }}>
@@ -1253,17 +1261,21 @@ export function KioskAIInterviewRoomPage({
 
                   {/* Subtitle Body */}
                   <div
+                    ref={transcriptScrollRef}
                     style={{
                       flex: 1,
                       overflowY: "auto",
+                      overflowX: "hidden",
                       minHeight: 28,
                       maxHeight: 46,
+                      minWidth: 0,
+                      width: "100%",
                       display: "flex",
                       alignItems: "flex-start",
                     }}>
                     {isTranscriptEditing ? (
-                      <input
-                        type="text"
+                      <textarea
+                        ref={transcriptInputRef}
                         aria-label="Câu trả lời của bạn"
                         value={liveTranscript}
                         onChange={(e) => updateTranscript(e.target.value)}
@@ -1274,14 +1286,22 @@ export function KioskAIInterviewRoomPage({
                           }
                         }}
                         placeholder="Nhập hoặc chỉnh sửa câu trả lời..."
+                        rows={1}
                         style={{
                           width: "100%",
+                          height: "100%",
+                          minHeight: 28,
                           backgroundColor: "transparent",
                           border: "none",
                           color: "#E2E8F0",
                           fontSize: 13,
                           lineHeight: "18px",
                           outline: "none",
+                          overflowY: "auto",
+                          overflowWrap: "anywhere",
+                          resize: "none",
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
                           padding: 0,
                           margin: 0,
                         }}
@@ -1289,10 +1309,16 @@ export function KioskAIInterviewRoomPage({
                     ) : (
                       <span
                         style={{
+                          display: "block",
+                          minWidth: 0,
+                          width: "100%",
                           color: "#E2E8F0",
                           fontSize: 13,
                           lineHeight: "18px",
                           fontStyle: "italic",
+                          overflowWrap: "anywhere",
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
                         }}>
                         "
                         {liveTranscript ||
@@ -1372,18 +1398,14 @@ export function KioskAIInterviewRoomPage({
         {/* ── RIGHT CHAT DRAWER (Exact 1:1 Mobile Match) ── */}
         {isDrawerOpen && (
           <div
+            className="absolute inset-0 z-40 h-full w-full p-3 md:static md:inset-auto md:z-auto md:w-[clamp(300px,38vw,360px)] md:px-4 md:pb-4 lg:w-[clamp(360px,30vw,560px)] lg:px-5"
             style={{
-              width: experienceMode === "web" ? "clamp(360px, 30vw, 560px)" : 318,
-              marginRight: experienceMode === "web" ? -40 : 0,
               flexShrink: 0,
-              height: "100%",
               minHeight: 0,
-              alignSelf: "stretch",
               backgroundColor: "#0B1220",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              padding: experienceMode === "web" ? "0 20px 16px" : "8px 0",
               borderLeft: "1px solid rgba(148, 163, 184, 0.18)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
