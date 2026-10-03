@@ -386,6 +386,7 @@ export function RoundCanvasEditorWorkspace({
     if (e.button !== 0) return;
     if (
       (e.target as HTMLElement).closest(".round-card") ||
+      (e.target as HTMLElement).closest(".round-canvas-round-card") ||
       (e.target as HTMLElement).closest("button")
     )
       return;
@@ -1190,7 +1191,7 @@ export function RoundCanvasEditorWorkspace({
                               touchAction: "none",
                             }}
                             className={cn(
-                              "round-canvas-round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
+                              "round-card round-canvas-round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
                               isSelected
                                 ? "border-blue-400 shadow-xl ring-2 ring-blue-400/30 dark:border-blue-500"
                                 : "border-slate-200 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:hover:border-slate-600",
