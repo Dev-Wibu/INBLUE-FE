@@ -16,7 +16,7 @@ export function EmailQueueActions({
   onActionComplete?: () => void | Promise<void>;
 }) {
   const { t } = useTranslation();
-  const { data = [], refetch, isFetching } = useEmailSubmissions();
+  const { data = [], refetch, isFetching } = useEmailSubmissions(showQueueCount);
   const fetchMailbox = useFetchEmailMailbox();
   const processPending = useProcessPendingEmails();
   const pendingCount = data.filter((item) => item.status === "PENDING").length;
@@ -26,7 +26,7 @@ export function EmailQueueActions({
     try {
       const message = await fetchMailbox.mutateAsync();
       toast.success(message);
-      await refetch();
+      if (showQueueCount) await refetch();
       await onActionComplete?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("emailOperations.fetchError"));
@@ -37,7 +37,7 @@ export function EmailQueueActions({
     try {
       const message = await processPending.mutateAsync();
       toast.success(message);
-      await refetch();
+      if (showQueueCount) await refetch();
       await onActionComplete?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("emailOperations.processError"));
