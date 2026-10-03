@@ -8,7 +8,13 @@ import { Inbox, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-export function EmailQueueActions() {
+export function EmailQueueActions({
+  showQueueCount = true,
+  onActionComplete,
+}: {
+  showQueueCount?: boolean;
+  onActionComplete?: () => void | Promise<void>;
+}) {
   const { t } = useTranslation();
   const { data = [], refetch, isFetching } = useEmailSubmissions();
   const fetchMailbox = useFetchEmailMailbox();
@@ -21,6 +27,7 @@ export function EmailQueueActions() {
       const message = await fetchMailbox.mutateAsync();
       toast.success(message);
       await refetch();
+      await onActionComplete?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("emailOperations.fetchError"));
     }
@@ -31,6 +38,7 @@ export function EmailQueueActions() {
       const message = await processPending.mutateAsync();
       toast.success(message);
       await refetch();
+      await onActionComplete?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("emailOperations.processError"));
     }
@@ -40,10 +48,12 @@ export function EmailQueueActions() {
 
   return (
     <div className="flex flex-wrap items-center gap-2" aria-label={t("emailOperations.title")}>
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-slate-100 px-2.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-        <Inbox className="h-3.5 w-3.5" />
-        {t("emailOperations.queueCount", { count: pendingCount + errorCount })}
-      </span>
+      {showQueueCount && (
+        <span className="inline-flex h-8 items-center gap-1.5 rounded-md bg-slate-100 px-2.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          <Inbox className="h-3.5 w-3.5" />
+          {t("emailOperations.queueCount", { count: pendingCount + errorCount })}
+        </span>
+      )}
       <Button
         type="button"
         size="sm"

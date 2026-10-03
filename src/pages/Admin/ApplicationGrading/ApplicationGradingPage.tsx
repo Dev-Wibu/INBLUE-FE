@@ -107,6 +107,18 @@ function isAiInterviewDetail(detail?: ApplicationDetail): boolean {
   );
 }
 
+function isEmailRound(detail?: ApplicationDetail): boolean {
+  if (!detail) return false;
+  const explicitType = String(
+    (detail as ApplicationDetail & { roundType?: string }).roundType ?? ""
+  ).toUpperCase();
+  return (
+    explicitType === "EMAIL" ||
+    explicitType === "EMAIL_SIMULATOR" ||
+    inferRoundType(detail) === "EMAIL_SIMULATOR"
+  );
+}
+
 function getDisplayScore(detail?: ApplicationDetail): number | undefined {
   if (!detail) return undefined;
   if (detail.hrScore != null) return Number(detail.hrScore);
@@ -1543,8 +1555,6 @@ export function ApplicationGradingPage({
             </div>
           )}
 
-          <EmailQueueActions />
-
           <ReloadButton
             onReload={async () => {
               if (isStaff) {
@@ -2288,6 +2298,17 @@ export function ApplicationGradingDetailPage({
 
       {/* ── WORKSPACE CONTENT AREA ─────────────────────────────────────────── */}
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col space-y-6 p-4 sm:p-6 lg:p-8">
+        {isStaff && isEmailRound(activeDetail) && (
+          <div className="flex justify-end border-b border-slate-200/80 pb-4 dark:border-slate-800">
+            <EmailQueueActions
+              showQueueCount={false}
+              onActionComplete={async () => {
+                await refetch();
+              }}
+            />
+          </div>
+        )}
+
         {/* ── STAFF GRADING SUMMARY CARD & STICKER SCORE BADGE ───────────────── */}
         <StaffGradingHeaderCard
           detail={activeDetail}
