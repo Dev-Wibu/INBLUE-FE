@@ -1077,8 +1077,8 @@ export function RoundCanvasEditorWorkspace({
             <div
               ref={scrollContainerRef}
               className={cn(
-                "round-canvas-drag-surface relative h-full w-full overflow-auto select-none",
-                isPanning && "is-panning"
+                "relative h-full w-full overflow-auto select-none",
+                isPanning ? "cursor-grabbing" : "cursor-grab"
               )}
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleCanvasDrop}
@@ -1187,15 +1187,16 @@ export function RoundCanvasEditorWorkspace({
                               top: pos.y,
                               width: 208,
                               zIndex: isMovingThis ? 50 : isSelected ? 10 : 1,
+                              cursor: isMovingThis ? "grabbing" : "grab",
                               userSelect: "none",
                               touchAction: "none",
                             }}
                             className={cn(
-                              "round-card round-canvas-round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
+                              "round-card group rounded-2xl border bg-white p-4 shadow-md transition-shadow duration-150 dark:bg-slate-900/80 dark:shadow-lg",
                               isSelected
                                 ? "border-blue-400 shadow-xl ring-2 ring-blue-400/30 dark:border-blue-500"
                                 : "border-slate-200 hover:border-slate-300 hover:shadow-xl dark:border-slate-800 dark:hover:border-slate-600",
-                              isMovingThis ? "is-moving shadow-2xl" : ""
+                              isMovingThis ? "shadow-2xl" : ""
                             )}
                             onPointerDown={(e) => handleCardPointerDown(e, idx)}
                             onPointerMove={(e) => handleCardPointerMove(e, idx)}

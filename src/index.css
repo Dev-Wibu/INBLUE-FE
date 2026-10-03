@@ -3403,25 +3403,6 @@
   }
 }
 
-/* High-contrast drag cursors for the round-canvas studio. */
-.round-canvas-drag-surface,
-.round-canvas-round-card,
-.round-card {
-  cursor:
-    url("/cursors/grab.png") 12 12,
-    url("/cursors/grab.svg") 12 12,
-    grab;
-}
-
-.round-canvas-drag-surface.is-panning,
-.round-canvas-round-card.is-moving,
-.round-card.is-moving {
-  cursor:
-    url("/cursors/grabbing.png") 12 12,
-    url("/cursors/grabbing.svg") 12 12,
-    grabbing;
-}
-
 /* Route /holobox/competency: AI-only WebGL canvas for the physical Holobox display. */
 .holobox-robot-only-page,
 .holobox-ai-only-page,
