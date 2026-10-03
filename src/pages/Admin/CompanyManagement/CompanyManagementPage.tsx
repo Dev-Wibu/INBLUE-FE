@@ -239,11 +239,11 @@ export function CompanyManagementPage() {
 
   const selectedJd = useMemo(() => {
     if (!selectedJdId) return null;
+    if (directSelectedJd) return directSelectedJd;
     const foundInProcessed = processedJds.find((j) => String(j.id) === String(selectedJdId));
     if (foundInProcessed) return foundInProcessed;
     const foundInAll = allJds.find((j) => String(j.id) === String(selectedJdId));
     if (foundInAll) return foundInAll as JobDescription;
-    if (directSelectedJd) return directSelectedJd;
     return null;
   }, [selectedJdId, processedJds, allJds, directSelectedJd]);
 
