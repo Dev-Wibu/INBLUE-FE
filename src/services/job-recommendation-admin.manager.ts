@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from "@/constants/api.config";
 import type { ApiResponse, JobRecommendationThresholdResponse } from "@/interfaces";
 import { fetchClient } from "@/lib/api";
 import i18n from "@/lib/i18n";
@@ -15,7 +16,28 @@ export function parseRecommendationThreshold(value: string): number | null {
   return isValidRecommendationThreshold(parsed) ? parsed : null;
 }
 
+export interface JobDescriptionConfigResponse {
+  id?: number;
+  matchThresholdPercent?: number;
+  updatedAt?: string;
+}
+
 export class JobRecommendationAdminManager {
+  async getConfig(): Promise<ApiResponse<JobDescriptionConfigResponse>> {
+    try {
+      // Endpoint is not in schema-from-be.d.ts yet, so the typed client cannot infer it.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (fetchClient as any).GET(API_ENDPOINTS.JOB_DESCRIPTIONS.CONFIG, {});
+      return { success: true, data: data as JobDescriptionConfigResponse };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : i18n.t("jobRecommendationThreshold.loadFailed"),
+      };
+    }
+  }
+
   async updateThreshold(
     thresholdPercent: number
   ): Promise<ApiResponse<JobRecommendationThresholdResponse>> {

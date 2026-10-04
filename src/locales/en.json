@@ -8326,6 +8326,8 @@
     "inputTitle": "Choose the level",
     "inputDescription": "Enter a value or use a quick option based on your current hiring needs.",
     "inputHint": "Enter 0 to 100, with up to two decimal places.",
+    "loading": "Loading the current setting...",
+    "loadFailed": "Could not load the current setting.",
     "quickSelect": "Quick options",
     "presets": {
       "broad": "Broader reach",

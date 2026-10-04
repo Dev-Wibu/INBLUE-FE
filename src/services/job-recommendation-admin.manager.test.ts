@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockApi } = vi.hoisted(() => ({
-  mockApi: { PUT: vi.fn() },
+  mockApi: { GET: vi.fn(), PUT: vi.fn() },
 }));
 
 vi.mock("@/lib/api", () => ({ fetchClient: mockApi }));
@@ -29,6 +29,24 @@ describe("jobRecommendationAdminManager", () => {
       expect(parseRecommendationThreshold(input)).toBeNull();
     }
   );
+
+  it("loads the current config", async () => {
+    const config = { id: 1, matchThresholdPercent: 70, updatedAt: "2026-09-13T09:30:29.235208" };
+    mockApi.GET.mockResolvedValueOnce({ data: config });
+    await expect(jobRecommendationAdminManager.getConfig()).resolves.toEqual({
+      success: true,
+      data: config,
+    });
+    expect(mockApi.GET).toHaveBeenCalledWith("/api/job-descriptions/config", {});
+  });
+
+  it("reports a failed config load", async () => {
+    mockApi.GET.mockRejectedValueOnce(new Error("Forbidden"));
+    await expect(jobRecommendationAdminManager.getConfig()).resolves.toEqual({
+      success: false,
+      error: "Forbidden",
+    });
+  });
 
   it("sends the threshold request body", async () => {
     mockApi.PUT.mockResolvedValueOnce({ data: { thresholdPercent: 70.25 } });

@@ -22,7 +22,7 @@ import {
   jobRecommendationAdminManager,
   parseRecommendationThreshold,
 } from "@/services/job-recommendation-admin.manager";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowRight,
@@ -49,25 +49,36 @@ const THRESHOLD_PRESETS = [
   { value: 85, labelKey: "jobRecommendationThreshold.presets.strict" },
 ] as const;
 
-const THRESHOLD_STORAGE_KEY = "job-recommendation-threshold";
-
-function readStoredThreshold(): string {
-  try {
-    return window.localStorage.getItem(THRESHOLD_STORAGE_KEY) || "";
-  } catch {
-    return "";
-  }
-}
+const THRESHOLD_QUERY_KEY = ["admin", "job-recommendation-threshold"] as const;
 
 export function RecommendationThresholdDialog({
   open,
   onOpenChange,
 }: RecommendationThresholdDialogProps) {
   const { t } = useTranslation();
-  const [inputValue, setInputValue] = useState(readStoredThreshold);
+  const queryClient = useQueryClient();
+  // null means the admin has not edited yet, so the input mirrors the saved value.
+  const [draftValue, setDraftValue] = useState<string | null>(null);
   const [validationError, setValidationError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValue, setPendingValue] = useState<number | null>(null);
+
+  const configQuery = useQuery({
+    queryKey: THRESHOLD_QUERY_KEY,
+    queryFn: async () => {
+      const result = await jobRecommendationAdminManager.getConfig();
+      if (!result.success) {
+        throw new Error(result.error || t("jobRecommendationThreshold.loadFailed"));
+      }
+      return result.data?.matchThresholdPercent ?? null;
+    },
+    enabled: open,
+    staleTime: 0,
+    gcTime: 0,
+  });
+  const isLoadingConfig = configQuery.isFetching;
+  const savedValue = configQuery.data ?? null;
+  const inputValue = draftValue ?? (savedValue === null ? "" : String(savedValue));
 
   const mutation = useMutation({
     mutationFn: async (thresholdPercent: number) => {
@@ -79,12 +90,8 @@ export function RecommendationThresholdDialog({
     },
     onSuccess: ({ thresholdPercent }) => {
       toast.success(t("jobRecommendationThreshold.success", { value: thresholdPercent }));
-      setInputValue(String(thresholdPercent));
-      try {
-        window.localStorage.setItem(THRESHOLD_STORAGE_KEY, String(thresholdPercent));
-      } catch {
-        // Storage is optional; the current value remains available in state.
-      }
+      queryClient.setQueryData(THRESHOLD_QUERY_KEY, thresholdPercent);
+      setDraftValue(null);
       setValidationError("");
       onOpenChange(false);
     },
@@ -92,8 +99,9 @@ export function RecommendationThresholdDialog({
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (mutation.isPending) return;
-    if (nextOpen && !open) {
-      setInputValue((current) => current || readStoredThreshold());
+    if (!nextOpen) {
+      // Drop unsaved edits so the next open shows the value fetched from the server.
+      setDraftValue(null);
       setValidationError("");
       mutation.reset();
     }
@@ -101,7 +109,7 @@ export function RecommendationThresholdDialog({
   };
 
   const setThreshold = (value: string) => {
-    setInputValue(value);
+    setDraftValue(value);
     setValidationError("");
     mutation.reset();
   };
@@ -129,7 +137,12 @@ export function RecommendationThresholdDialog({
     inputValue.trim() !== "" && parsedValue === null
       ? t("jobRecommendationThreshold.validation")
       : "";
-  const displayedError = validationError || inputError || mutation.error?.message;
+  const displayedError =
+    validationError ||
+    inputError ||
+    mutation.error?.message ||
+    (draftValue === null ? configQuery.error?.message : undefined);
+  const isBusy = mutation.isPending || isLoadingConfig;
 
   return (
     <>
@@ -183,18 +196,20 @@ export function RecommendationThresholdDialog({
                       placeholder="0"
                       aria-invalid={Boolean(displayedError)}
                       aria-describedby="recommendation-threshold-message"
-                      disabled={mutation.isPending}
+                      disabled={isBusy}
                       className="h-14 rounded-xl border-slate-200 bg-slate-50/50 pr-16 text-xl font-bold text-slate-950 placeholder:text-slate-400 focus-visible:border-indigo-500 focus-visible:bg-white focus-visible:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-950/80 dark:text-white dark:placeholder:text-slate-500 dark:focus-visible:border-indigo-400 dark:focus-visible:bg-slate-950 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                     <span className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-lg font-semibold text-slate-500 dark:text-slate-400">
-                      %
+                      {isLoadingConfig ? <Loader2 className="h-5 w-5 animate-spin" /> : "%"}
                     </span>
                   </div>
                   <p
                     id="recommendation-threshold-message"
                     role={displayedError ? "alert" : undefined}
                     className={`mt-2 min-h-5 text-xs leading-5 ${displayedError ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}>
-                    {displayedError || t("jobRecommendationThreshold.inputHint")}
+                    {isLoadingConfig
+                      ? t("jobRecommendationThreshold.loading")
+                      : displayedError || t("jobRecommendationThreshold.inputHint")}
                   </p>
                 </div>
 
@@ -211,7 +226,7 @@ export function RecommendationThresholdDialog({
                           type="button"
                           aria-pressed={isSelected}
                           onClick={() => setThreshold(String(preset.value))}
-                          disabled={mutation.isPending}
+                          disabled={isBusy}
                           className={`relative min-h-16 rounded-xl border px-2 py-2 text-center transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-slate-900 ${
                             isSelected
                               ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-2xs dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-200"
@@ -301,7 +316,7 @@ export function RecommendationThresholdDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending || parsedValue === null}
+                disabled={isBusy || parsedValue === null}
                 className="h-9.5 min-w-32 gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:bg-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500">
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t("jobRecommendationThreshold.save")}

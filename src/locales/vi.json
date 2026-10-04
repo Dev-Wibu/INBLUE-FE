@@ -8326,6 +8326,8 @@
     "inputTitle": "Chọn mức áp dụng",
     "inputDescription": "Nhập một giá trị hoặc chọn nhanh theo nhu cầu tuyển dụng hiện tại.",
     "inputHint": "Nhập từ 0 đến 100, tối đa hai chữ số thập phân.",
+    "loading": "Đang tải cấu hình hiện tại...",
+    "loadFailed": "Không thể tải cấu hình hiện tại.",
     "quickSelect": "Chọn nhanh",
     "presets": {
       "broad": "Phạm vi rộng",

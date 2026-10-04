@@ -360,6 +360,7 @@ export const API_ENDPOINTS = {
     SOFT_DELETE: "/api/job-descriptions/:id/soft",
     TOGGLE: "/api/job-descriptions/toggle/:id",
     RECOMMENDATIONS: "/api/job-descriptions/recommendations",
+    CONFIG: "/api/job-descriptions/config",
   },
 
   ADMIN: {
