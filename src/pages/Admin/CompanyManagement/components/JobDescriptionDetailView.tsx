@@ -233,6 +233,7 @@ export function JobDescriptionDetailView({
 }: JobDescriptionDetailViewProps) {
   const { t } = useTranslation();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isLoadingRoundEditor, setIsLoadingRoundEditor] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentJd, setCurrentJd] = useState<JobDescription>(jobDescription);
   const [detailTab, setDetailTab] = useState<"description" | "requirements" | "benefits">(
@@ -326,6 +327,22 @@ export function JobDescriptionDetailView({
       toast.error(t("errors.cannotUpdateJobDescription", "Cập nhật thất bại"));
     } finally {
       setIsSavingJd(false);
+    }
+  };
+
+  const handleOpenRoundEditor = async () => {
+    if (!currentJd.id || isLoadingRoundEditor) return;
+    setIsLoadingRoundEditor(true);
+    try {
+      const response = await jobDescriptionManager.getById(currentJd.id);
+      if (!response.success || !response.data) {
+        toast.error(response.error || t("errors.cannotLoadJobDescription"));
+        return;
+      }
+      setCurrentJd(response.data as unknown as JobDescription);
+      setIsEditorOpen(true);
+    } finally {
+      setIsLoadingRoundEditor(false);
     }
   };
 
@@ -438,15 +455,33 @@ export function JobDescriptionDetailView({
       const res = endpointResult;
 
       if (res.success && res.data) {
-        toast.success(t("general.updateSuccess"));
         // PUT returns an array, but GET is the persistence check because the
         // backend replaces the complete JSONB config on update.
         const refreshed = await jobDescriptionManager.getById(jdId);
-        const savedRounds =
-          refreshed.success && refreshed.data?.rounds
-            ? refreshed.data.rounds
-            : (res.data as unknown as typeof currentJd.rounds);
+        if (!refreshed.success || !refreshed.data?.rounds) {
+          throw new Error(refreshed.error || t("errors.cannotLoadJobDescription"));
+        }
+        const savedRounds = refreshed.data.rounds;
+        const emailConfigsPersisted = payloadRounds
+          .filter((round) => round.roundType === "EMAIL_SIMULATOR")
+          .every((requestedRound) => {
+            const savedRound = savedRounds.find(
+              (round) =>
+                (requestedRound.id != null && round.id === requestedRound.id) ||
+                round.roundOrder === requestedRound.roundOrder
+            );
+            return (
+              savedRound?.configData?.instruction === requestedRound.configData.instruction &&
+              savedRound.configData.evaluationCriteria ===
+                requestedRound.configData.evaluationCriteria &&
+              savedRound.configData.aiSystemPrompt === requestedRound.configData.aiSystemPrompt
+            );
+          });
+        if (!emailConfigsPersisted) {
+          throw new Error(t("errors.cannotUpdateInterviewRounds"));
+        }
         setCurrentJd((prev) => (prev ? { ...prev, rounds: savedRounds } : prev));
+        toast.success(t("general.updateSuccess"));
         // Only close the editor on a full save; per-round saves keep the user in the workspace.
         if (options?.closeEditorAfter !== false) {
           setIsEditorOpen(false);
@@ -684,7 +719,8 @@ export function JobDescriptionDetailView({
         <div className="flex shrink-0 items-center gap-2">
           <Button
             type="button"
-            onClick={() => setIsEditorOpen(true)}
+            onClick={() => void handleOpenRoundEditor()}
+            disabled={isLoadingRoundEditor}
             className="h-8.5 gap-1.5 rounded-xl bg-indigo-600 px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
             <Sparkles className="h-3.5 w-3.5" />
             <span>{t("adminCompanymanagement.studioWorkspace", "Studio Workspace sơ đồ")}</span>
@@ -703,7 +739,8 @@ export function JobDescriptionDetailView({
                 {t("adminCompanymanagement.recruitmentPipeline", "Quy trình tuyển dụng")}
               </h3>
               <Button
-                onClick={() => setIsEditorOpen(true)}
+                onClick={() => void handleOpenRoundEditor()}
+                disabled={isLoadingRoundEditor}
                 className="h-8 gap-1.5 bg-indigo-600 px-3 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700">
                 <Sparkles className="h-3.5 w-3.5" />
                 {t("adminCompanymanagement.studioWorkspace", "Studio Workspace sơ đồ")}
@@ -730,7 +767,8 @@ export function JobDescriptionDetailView({
                   </p>
                 </div>
                 <Button
-                  onClick={() => setIsEditorOpen(true)}
+                  onClick={() => void handleOpenRoundEditor()}
+                  disabled={isLoadingRoundEditor}
                   className="h-7 bg-indigo-600 px-3 text-xs font-semibold text-white hover:bg-indigo-700">
                   + {t("adminCompanymanagement.setupPipeline", "Cấu hình quy trình tuyển dụng")}
                 </Button>
@@ -745,7 +783,7 @@ export function JobDescriptionDetailView({
                   return (
                     <div key={index} className="flex shrink-0 items-stretch gap-2.5">
                       <div
-                        onClick={() => setIsEditorOpen(true)}
+                        onClick={() => void handleOpenRoundEditor()}
                         className="group flex h-full w-full max-w-[210px] min-w-[170px] flex-1 cursor-pointer flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-300 hover:bg-white hover:shadow-xs dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-700 dark:hover:bg-slate-900">
                         {/* Round Header */}
                         <div className="flex items-center justify-between gap-2">

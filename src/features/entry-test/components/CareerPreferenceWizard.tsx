@@ -29,7 +29,7 @@ import {
   entryTestRoles,
   entryTestSkillsByRole,
 } from "../constants/entry-test-onboarding.constants";
-import { useSkipCareerPreference, useUpsertCareerPreference } from "../hooks/useCareerPreference";
+import { useUpsertCareerPreference } from "../hooks/useCareerPreference";
 import type { TargetLevel, TargetRole, UserCareerPreference } from "../types/entry-test.types";
 import { normalizeCareerLanguages } from "../utils/entry-test-payload";
 
@@ -55,7 +55,6 @@ export function CareerPreferenceWizard({
   const [level, setLevel] = useState<TargetLevel | null>(initialPreference?.targetLevel ?? null);
   const [goal, setGoal] = useState(initialPreference?.careerGoal ?? "");
   const upsert = useUpsertCareerPreference();
-  const skip = useSkipCareerPreference();
   const availableSkills = useMemo(() => (role ? entryTestSkillsByRole[role] : []), [role]);
 
   useEffect(() => {
@@ -89,11 +88,6 @@ export function CareerPreferenceWizard({
       careerGoal: goal.trim() || null,
       targetLevel: level,
     });
-    onSaved(preference);
-  };
-
-  const handleSkip = async () => {
-    const preference = await skip.mutateAsync();
     onSaved(preference);
   };
 
@@ -360,9 +354,11 @@ export function CareerPreferenceWizard({
           <Button
             variant="ghost"
             className="rounded-xl"
-            onClick={handleSkip}
-            disabled={skip.isPending || upsert.isPending}>
-            {t("entryTestWizard.later")}
+            onClick={() => onOpenChange(false)}
+            disabled={upsert.isPending}>
+            {initialPreference?.targetRole
+              ? t("entryTestWizard.cancel")
+              : t("entryTestWizard.later")}
           </Button>
           <div className="flex gap-2">
             {step > 0 && (

@@ -150,6 +150,16 @@ export function CompanyGridTab({
     });
   }, [companyJds, selectedCompany, openJds]);
 
+  const { data: directSelectedJd } = useQuery({
+    queryKey: ["admin", "jd-detail-header", selectedJdId],
+    queryFn: async () => {
+      if (!selectedJdId) return null;
+      const response = await jobDescriptionManager.getById(selectedJdId);
+      return response.success && response.data ? response.data : null;
+    },
+    enabled: !!selectedJdId,
+  });
+
   const filteredJds = useMemo(() => {
     let result = enrichedCompanyJds;
     if (jdStatusFilter !== "all") {
@@ -173,8 +183,9 @@ export function CompanyGridTab({
   }, [enrichedCompanyJds, jdSearchQuery, jdStatusFilter]);
 
   const selectedJd = useMemo(() => {
-    return selectedJdId ? enrichedCompanyJds.find((j) => j.id === selectedJdId) : null;
-  }, [selectedJdId, enrichedCompanyJds]);
+    if (!selectedJdId) return null;
+    return directSelectedJd ?? enrichedCompanyJds.find((j) => j.id === selectedJdId) ?? null;
+  }, [selectedJdId, directSelectedJd, enrichedCompanyJds]);
 
   const handleEditClick = (company: Company, e: React.MouseEvent) => {
     e.stopPropagation();

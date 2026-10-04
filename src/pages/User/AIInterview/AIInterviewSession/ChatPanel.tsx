@@ -32,6 +32,8 @@ function ChatInput({
 }) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const displayValue =
+    isListening && interimTranscript ? (value ? value + " " : "") + interimTranscript : value;
   const handleSend = useCallback(() => {
     const trimmed = value.trim();
     if (!trimmed || disabled) return;
@@ -56,17 +58,16 @@ function ChatInput({
     }
   };
 
-  // Auto-resize textarea
+  // Keep the composer compact while ensuring long typed or dictated answers follow the caret.
   useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-  }, [value]);
+    el.style.overflowY = el.scrollHeight > 120 ? "auto" : "hidden";
+    el.scrollTop = el.scrollHeight;
+  }, [displayValue]);
 
-  // Ghép interim transcript vào cuối để preview realtime khi đang nói
-  const displayValue =
-    isListening && interimTranscript ? (value ? value + " " : "") + interimTranscript : value;
   const characterCount = value.length;
   const canSend = value.trim().length > 0 && !disabled && !isListening;
   return (
@@ -88,7 +89,7 @@ function ChatInput({
             disabled={disabled}
             rows={1}
             className={cn(
-              "w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800",
+              "max-h-[120px] w-full resize-none overflow-x-hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm break-words transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800",
               isListening
                 ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
                 : "focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 dark:focus:ring-cyan-900/40"
